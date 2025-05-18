@@ -1,0 +1,33 @@
+#pragma once
+#include "String.h"
+#include "UserFileHandler.h"
+#include "MessageFileHandler.h"
+#include <stdint.h>
+
+enum class UserType:uint8_t {
+	Admin,
+	Teacher,
+	Student
+};
+
+class User {
+private:
+	static unsigned idCounter;
+protected:
+	String firstName;
+	String lastName;
+	String hashedPassword;
+	unsigned id;
+
+public:
+	friend User* UserFileHandler::readUser();
+	virtual UserType getRole() const = 0;
+	virtual User* clone() const = 0;
+	const String& getFirstName() const;
+	const String& getLastName() const;
+	unsigned getId() const;
+	const String& getHashedPassword() const;
+	User();
+	User(const String& firstName, const String& lastName, const String& password);
+	virtual ~User() = default;
+};
