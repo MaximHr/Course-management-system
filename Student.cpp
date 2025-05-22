@@ -4,7 +4,7 @@ UserType Student::getRole() const {
 	return UserType::Student;
 }
 
-Student::Student(const String& firstName, const String& lastName, const String& password):User(firstName, lastName, password) {
+Student::Student(const String& firstName, const String& lastName, const String& password, unsigned idCounter):User(firstName, lastName, password, idCounter) {
 
 }
 

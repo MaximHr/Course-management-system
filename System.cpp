@@ -1,99 +1,88 @@
 #include "System.h"
+String usersFileName = "users.dat";
+String messagesFileName = "messages.dat";
+String coursesFileName = "courses.dat";
+String tempFileName = "temp.dat";
 
-CommandHandler System::commandHandler;
+unsigned System::userIdCounter = 100;
+UserFileHandler System::userFileHandler(usersFileName, userIdCounter);
+MessageFileHandler System::messageFileHandler(messagesFileName);
 
-int getValidatedInt() {
-	int number;
-	while(true) {
-		std::cin >> number;
-		if(std::cin.fail()) {
-			std::cin.clear();
-			std::cin.ignore();
-		} else {
-			std::cin.ignore();
-			return number;
-		}
+System::System() { }
+
+unsigned System::addUser(UserType type, const String& firstName, const String& lastName, const String& password) {
+	if(user == nullptr || user->getRole() != UserType::Admin) {
+		throw std::runtime_error("Access denied.");
+	}
+	User* newUser = UserFactory::createUser(type, firstName, lastName, password, userIdCounter);
+	userIdCounter++;
+	if(userFileHandler.findUser(newUser->getId(), newUser->getHashedPassword(), true) != -1) {
+		delete newUser;
+		throw std::runtime_error("User with that id already exists");
+	}
+	userFileHandler.saveUser(newUser);
+	unsigned id = newUser->getId();
+	delete newUser;
+
+	return id;
+}
+
+void System::login(unsigned id, const String& password) {
+	if(user != nullptr) {
+		throw std::runtime_error("You must logout first, in order to log in.");
+	}
+	String hashedPass = password.reverse();
+	int pos = userFileHandler.findUser(id, hashedPass, false);
+	if(pos == -1) {
+		throw std::runtime_error("Invalid credentials");
+	}
+	int current = userFileHandler.file.tellg();
+	userFileHandler.file.seekg(pos);
+	user = userFileHandler.readUser();
+	userFileHandler.file.seekg(current);
+}
+
+void System::deleteUser(unsigned id) {
+	if(user == nullptr || user->getRole() != UserType::Admin) {
+		throw std::runtime_error("Access denied.");
+	}
+	if(user->getId() == id) {
+		throw std::runtime_error("Admin can not be deleted.");
+	}
+	int fileSize = userFileHandler.getFileSize();
+	userFileHandler.deleteUser(id);
+	if(fileSize != userFileHandler.getFileSize()) {
+		std::cout << "User deleted succefully!" << '\n';
+	} else {
+		std::cout << "No user found with that id. " << '\n';
 	}
 }
 
-void System::start() {
-	std::cout << "Welcome to CourseHub" << '\n';
-	std::cout << "Type help to view all commands" << '\n';
-	String str;
-	do {
-		std::cin >> str;
-		callCommand(str);
-	} while(str != "exit");
+void System::logout() {
+	delete user;
+	user = nullptr;
 }
 
-void System::callCommand(const String& str) {
-	String trimmed = str.trim();
-	try {
-		if(trimmed == "help") {
-			help();
-		} else if(trimmed == "add_user") {
-			addUser();
-		} else if(trimmed == "delete_user") {
-			deleteUser();
-		} else if(trimmed == "login") {
-			login();
-		} else if(trimmed == "logout") {
-			commandHandler.logout();
-		}
-	} catch(const std::exception& e) {
-		std::cout << e.what() << '\n';
+void System::copyDynamic(const System& other) {
+	user = other.user->clone();
+}
+void System::freeDynamic() {
+	delete user;
+	user = nullptr;
+}
+
+System::~System() {
+	freeDynamic();
+}
+
+System::System(const System& other){
+	copyDynamic(other);
+}
+
+System& System::operator=(const System& other) {
+	if(this != &other) {
+		freeDynamic();
+		copyDynamic(other);
 	}
+	return *this;
 }
-
-void System::login() {
-	unsigned id;
-	String pass;
-	std::cout << "Id: ";
-	id = getValidatedInt();
-	std::cout << "Password: ";
-	std::cin >> pass;
-	commandHandler.login(id, pass);
-	std::cout << "Login succefull!" << std::endl;
-
-}
-
-void System::addUser() {
-	String firstName, lastName, password, strType;
-	UserType type;
-	bool isValidType = false;
-	do {
-		std:: cout << "Choose role for the user (student or teacher): ";
-		std::cin >> strType;
-		if(strType == "student") {
-			type = UserType::Student;
-			isValidType = true;
-		} else if(strType == "teacher") {
-			type = UserType::Teacher;
-			isValidType = true;
-		}
-	} while(!isValidType);
-	std::cout << "first name: ";
-	std::cin >> firstName;
-	std::cout << "last name: ";
-	std::cin >> lastName;
-	std::cout << "password: ";
-	std::cin >> password;
-	unsigned id = commandHandler.addUser(type, firstName, lastName, password);
-	std::cout << "Added " << strType << ' ' << firstName << ' ' << lastName << " with ID " << id << '\n'; 
-}
-
-void System::deleteUser() {
-	std::cout << "id: ";
-	unsigned id = getValidatedInt();
-	commandHandler.deleteUser(id);
-	std::cout << "User deleted succefully!" << '\n';
-}
-
-void System::help() {
-	std::cout << "login" << '\n';
-	std::cout << "logout" << '\n';
-	std::cout << "add_user | Admin only" << '\n';
-	std::cout << "delete_user | Admin only" << '\n';
-	std::cout << "exit" << '\n';
-}
-

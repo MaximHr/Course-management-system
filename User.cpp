@@ -1,19 +1,9 @@
 #include "User.h"
 
-//TODO: read from file which is the lastId and set idCounter properly:
-unsigned User::idCounter = 99;
-
-User::User() {
-	id = idCounter;
-	idCounter++;
-};
-
 //for simplcity i am not hashing the password, but just reversing it
-User::User(const String& firstName, const String& lastName, const String& password):
-	firstName(firstName), lastName(lastName), hashedPassword(password.reverse())
-{
-	id = idCounter;
-	idCounter++;
+User::User(const String& firstName, const String& lastName, const String& password, int idCounter):
+	firstName(firstName), lastName(lastName), hashedPassword(password.reverse()), id(idCounter)
+	{
 };
 
 const String& User::getFirstName() const {

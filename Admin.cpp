@@ -1,8 +1,6 @@
 #include "Admin.h"
 
-Admin::Admin():User("admin", "_", "0000") {
-	id = 0;
-}
+Admin::Admin():User("admin", "_", "0000", 0) { }
 
 UserType Admin::getRole() const {
 	return UserType::Admin;

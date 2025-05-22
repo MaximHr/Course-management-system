@@ -3,7 +3,8 @@
 #include <fstream>
 #include <exception>
 
-struct FileHandler {
+class FileHandler {
+public:
 	std::fstream file;
 
 	FileHandler()=default;

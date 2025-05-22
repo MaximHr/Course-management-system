@@ -5,10 +5,11 @@
 #include <iostream>
 class User;
 
-struct UserFileHandler:FileHandler {
+class UserFileHandler: public FileHandler {
+public:
 	UserFileHandler() = default;
 	~UserFileHandler() = default;
-	UserFileHandler(const String& str);
+	UserFileHandler(const String& str, unsigned& userIdCounter);
 	void saveUser(const User* user);
 	User* readUser();
 	User* readUser(int& sizeInBytes);

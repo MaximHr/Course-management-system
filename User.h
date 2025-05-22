@@ -12,7 +12,6 @@ enum class UserType:uint8_t {
 
 class User {
 private:
-	static unsigned idCounter;
 protected:
 	String firstName;
 	String lastName;
@@ -27,7 +26,7 @@ public:
 	const String& getLastName() const;
 	unsigned getId() const;
 	const String& getHashedPassword() const;
-	User();
-	User(const String& firstName, const String& lastName, const String& password);
+	User() = default;
+	User(const String& firstName, const String& lastName, const String& password, int idCounter);
 	virtual ~User() = default;
 };

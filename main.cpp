@@ -5,8 +5,8 @@
 #include "Message.h"
 #include "CommandHandler.h"
 int main() {
-	// CommandHandler c;
-	// c.start();
+	CommandHandler c;
+	c.start();
 	
 // 	Admin* admin = new Admin();
 	// User* u2 = new User("Gosho", "Goshov", "qwerty");

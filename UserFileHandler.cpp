@@ -1,32 +1,46 @@
 #include "UserFileHandler.h"
 #include "User.h"
-#include "CommandHandler.h"
+#include "System.h"
 #include "UserFactory.h"
 
-UserFileHandler::UserFileHandler(const String& str):FileHandler(str) { }
+UserFileHandler::UserFileHandler(const String& str, unsigned& userIdCounter):FileHandler(str) { 
+	try {
+		if(findUser(0, "0000", false) == -1) {
+			User* admin = new Admin();
+			saveUser(admin);
+			delete admin;
+		} else {
+			// userIdCounter = getLastId();
+			std::cout << userIdCounter << '\n';
+		}
+	} catch(const std::exception& e) {
+		std::cout << e.what() << std::endl;
+	}
+}
 
 void UserFileHandler::saveUser(const User* user) {
-	if(!isOpen()) throw std::runtime_error("file can not be opened");
+	if(!isOpen()) throw std::runtime_error("file can not be opened u9");
 	UserType type = user->getRole();
-
+	std::cout << "SAVE USER" << '\n';
 	write((const char*)& type, sizeof(UserType));
 	write(user->getFirstName());
 	write(user->getLastName());
 	write(user->getHashedPassword());
 	unsigned id = user->getId();
+	std::cout << "Write:" << user->getId() << ' ' << user->getHashedPassword() <<  '\n';
 	write((const char*)& id, sizeof(unsigned));
 }
 
 User* UserFileHandler::readUser() {
-	UserType role = UserType::Admin;
+	UserType role;
 	read((char*)& role, sizeof(UserType));
+	std::cout << "ROLE" << (int)role << '\n';
 	User* newUser = UserFactory::createUser(role);
-
 	read(newUser->firstName);
+	std::cout << newUser->firstName << '\n';
 	read(newUser->lastName);
 	read(newUser->hashedPassword);
 	read((char*)& newUser->id, sizeof(unsigned));
-
 	return newUser;
 }
 
@@ -39,26 +53,27 @@ User* UserFileHandler::readUser(int& sizeInBytes) {
 }
 
 int UserFileHandler::findUser(unsigned id, const String& hashedPassword, bool searchForIdOnly) {
-	if(!isOpen()) throw std::runtime_error("file can not be opened");
+	if(!isOpen()) throw std::runtime_error("file can not be opened u42");
 	if(getFileSize() == 0) return -1;
-
 	int index = file.tellg();
 	file.seekg(0);
-	User* tempUser = readUser();
+	User* tempUser = nullptr;
 	int result = 0;
-	while (
-    (searchForIdOnly && tempUser->getId() != id) ||
-    (!searchForIdOnly && (tempUser->getId() != id || tempUser->getHashedPassword() != hashedPassword))
-	) {
+	do {
 		if(file.eof()) {
 			file.clear();
-			delete tempUser;
+			if (tempUser != nullptr) {
+				delete tempUser;
+			}
 			return -1;
 		}
 		result = file.tellg();
-		delete tempUser;
 		tempUser = readUser();
-	}
+		delete tempUser;
+	} while (
+    (searchForIdOnly && tempUser->getId() != id) ||
+    (!searchForIdOnly && (tempUser->getId() != id || tempUser->getHashedPassword() != hashedPassword))
+	);
 
 	file.clear();
 	file.seekg(index);
@@ -92,7 +107,26 @@ void UserFileHandler::deleteUser(unsigned userId) {
 }
 
 int UserFileHandler::getLastId() {
-	int lastId = 100;
+	if(!isOpen()) throw std::runtime_error("file can not be opened u108");
 
-	return lastId;
+	int largestId = 100;
+	if(getFileSize() == 0) return largestId;
+	int index = file.tellg();
+	file.seekg(0);
+
+	User* tempUser;
+	do {
+		std::cout << "do()" << '\n';
+		tempUser = readUser();
+		std::cout << tempUser->getFirstName() << ' ' << tempUser->getId() << '\n';
+		if(tempUser->getId() >= largestId) {
+			largestId = tempUser->getId() + 1;
+		}
+		delete tempUser;
+	} while(file);
+
+	file.clear();
+	file.seekg(index);
+	
+	return largestId;
 }
