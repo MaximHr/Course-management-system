@@ -1,8 +1,23 @@
+#include "Config.h"
 #include "FileHandler.h"
 #include <iostream>
 
-FileHandler::FileHandler(const String& str) {
-	open(str);
+FileHandler::FileHandler(const String& str, bool truncMode) {
+	open(str, truncMode);
+}
+
+void FileHandler::open(const String& str, bool truncMode) {
+	if(truncMode == true) {
+		if(!isOpen()) {
+			file.open(str.c_str(), std::ios::binary | std::ios::in | std::ios::out | std::ios::trunc);
+		}
+		
+		if(!isOpen()) {
+			throw std::runtime_error("File can not be opened 14.");
+		}
+	} else {
+		open(str);
+	}
 }
 
 void FileHandler::open(const String& str) {
@@ -15,7 +30,6 @@ void FileHandler::open(const String& str) {
 		file.close();
 		file.open(str.c_str(), std::ios::in | std::ios::out | std::ios::binary);
 	}
-	std::cout << str.c_str() << " opened" << '\n';
 	if(!isOpen()) {
 		throw std::runtime_error("File can not be opened 21.");
 	}
@@ -39,17 +53,6 @@ void FileHandler::write(const char* data, unsigned bytes) {
 	file.write(data, bytes);
 }
 
-void FileHandler::read(char* data, unsigned bytes) {
-	if(!isOpen()) throw std::runtime_error("File can not be opened 44.");
-	file.read(data, bytes);
-	if (file.gcount() != bytes) {
-    std::cout << "Only read " << file.gcount() << " of " << bytes << " bytes.\n";
-	}
-	if(file.fail()) {
-		std::cout << bytes <<  " Non-fatal I/O error (failbit is set).\n";
-	}
-}
-
 void FileHandler::read(String& str) {
 	if(!isOpen()) throw std::runtime_error("File can not be opened 49.");
 	unsigned length;
@@ -58,12 +61,13 @@ void FileHandler::read(String& str) {
 	file.read((char*)buffer, length);
 	buffer[length] = '\0';
 	str = buffer;
-	if (file.gcount() != length) {
-    std::cout << "Only read " << file.gcount() << " of " << length << " bytes.\n";
-	}
-	if (file.fail()) {
-		std::cout << str <<  "STRING Non-fatal I/O error (failbit is set).\n";
-	}
+}
+
+void FileHandler::copyBytes(std::ofstream& ofs, int bytes) {
+	file.seekg(-bytes, std::ios::cur);
+	char buffer[bytes];
+	file.read(buffer, bytes);
+	ofs.write((const char*)buffer, bytes);
 }
 
 void FileHandler::changeFile(const char* strFrom, const char* strTo) {
@@ -79,18 +83,12 @@ void FileHandler::changeFile(const char* strFrom, const char* strTo) {
 	open(strTo);
 }
 
-void FileHandler::copyBytes(std::ofstream& ofs, int bytes) {
-	file.seekg(-bytes, std::ios::cur);
-	char buffer[bytes];
-	read(buffer, bytes);
-	ofs.write((const char*)buffer, bytes);
-}
-
 bool FileHandler::isOpen() const {
 	return file.is_open();
 }
 
 void FileHandler::close() {
+	file.flush();
 	file.close();
 }
 

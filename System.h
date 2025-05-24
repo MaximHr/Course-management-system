@@ -1,23 +1,19 @@
 #pragma once
+#include "Config.h"
 #include "String.h"
-#include "UserFileHandler.h"
-#include "MessageFileHandler.h"
 #include "User.h"
 #include "UserFactory.h"
 #include <exception>
-
-extern String usersFileName;
-extern String messagesFileName;
-extern String coursesFileName;
-extern String tempFileName;
+#include "IdContainer.h"
+#include "UserFileHandler.h"
 
 class System {
+	static IdContainer idContainer;
 	static UserFileHandler userFileHandler;
-	static MessageFileHandler messageFileHandler;
-	static unsigned userIdCounter;
 	User* user;
 	void copyDynamic(const System& other);
 	void freeDynamic();
+
 public:
 	System();
 	~System();

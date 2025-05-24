@@ -1,46 +1,39 @@
 #include "UserFileHandler.h"
 #include "User.h"
-#include "System.h"
 #include "UserFactory.h"
+#include "Config.h"
 
-UserFileHandler::UserFileHandler(const String& str, unsigned& userIdCounter):FileHandler(str) { 
-	try {
-		if(findUser(0, "0000", false) == -1) {
-			User* admin = new Admin();
-			saveUser(admin);
-			delete admin;
-		} else {
-			// userIdCounter = getLastId();
-			std::cout << userIdCounter << '\n';
-		}
-	} catch(const std::exception& e) {
-		std::cout << e.what() << std::endl;
+UserFileHandler::UserFileHandler(const String& str):FileHandler(str, false) {
+	if(findUser(Config::adminId, Config::adminPassword().reverse(), false) == -1) {
+		User* newUser = UserFactory::createUser(UserType::Admin);
+		saveUser(newUser);
+		delete newUser;
 	}
 }
 
 void UserFileHandler::saveUser(const User* user) {
-	if(!isOpen()) throw std::runtime_error("file can not be opened u9");
+	if(!isOpen()) throw std::runtime_error("file can not be opened");
 	UserType type = user->getRole();
-	std::cout << "SAVE USER" << '\n';
-	write((const char*)& type, sizeof(UserType));
+
+	file.write((const char*)& type, sizeof(UserType));
 	write(user->getFirstName());
 	write(user->getLastName());
 	write(user->getHashedPassword());
 	unsigned id = user->getId();
-	std::cout << "Write:" << user->getId() << ' ' << user->getHashedPassword() <<  '\n';
-	write((const char*)& id, sizeof(unsigned));
+	file.write((const char*)& id, sizeof(unsigned));
+	file.flush();
 }
 
 User* UserFileHandler::readUser() {
 	UserType role;
-	read((char*)& role, sizeof(UserType));
-	std::cout << "ROLE" << (int)role << '\n';
+
+	file.read((char*)& role, sizeof(UserType));
 	User* newUser = UserFactory::createUser(role);
 	read(newUser->firstName);
-	std::cout << newUser->firstName << '\n';
 	read(newUser->lastName);
 	read(newUser->hashedPassword);
-	read((char*)& newUser->id, sizeof(unsigned));
+	file.read((char*)& newUser->id, sizeof(unsigned));
+	std::cout << newUser->firstName << ' ' << newUser->hashedPassword << ' ' << newUser->id << '\n';
 	return newUser;
 }
 
@@ -53,27 +46,27 @@ User* UserFileHandler::readUser(int& sizeInBytes) {
 }
 
 int UserFileHandler::findUser(unsigned id, const String& hashedPassword, bool searchForIdOnly) {
-	if(!isOpen()) throw std::runtime_error("file can not be opened u42");
+	if(!isOpen()) throw std::runtime_error("file can not be opened");
 	if(getFileSize() == 0) return -1;
+
 	int index = file.tellg();
+	file.clear();
 	file.seekg(0);
-	User* tempUser = nullptr;
+	User* tempUser = readUser();
 	int result = 0;
-	do {
+	while (
+    (searchForIdOnly && tempUser->getId() != id) ||
+    (!searchForIdOnly && (tempUser->getId() != id || tempUser->getHashedPassword() != hashedPassword))
+	) {
 		if(file.eof()) {
 			file.clear();
-			if (tempUser != nullptr) {
-				delete tempUser;
-			}
+			delete tempUser;
 			return -1;
 		}
 		result = file.tellg();
-		tempUser = readUser();
 		delete tempUser;
-	} while (
-    (searchForIdOnly && tempUser->getId() != id) ||
-    (!searchForIdOnly && (tempUser->getId() != id || tempUser->getHashedPassword() != hashedPassword))
-	);
+		tempUser = readUser();
+	}
 
 	file.clear();
 	file.seekg(index);
@@ -81,8 +74,8 @@ int UserFileHandler::findUser(unsigned id, const String& hashedPassword, bool se
 	return result;
 }
 
-void UserFileHandler::deleteUser(unsigned userId) {
-	std::ofstream ofs(tempFileName.c_str(), std::ios::binary);
+void UserFileHandler::deleteUser(unsigned id) {
+	std::ofstream ofs(Config::fileNames(6).c_str(), std::ios::binary);
 	if(!ofs.is_open()) throw std::runtime_error("Failed to open temporary file for writing");
 
 	int index = file.tellg();
@@ -91,7 +84,7 @@ void UserFileHandler::deleteUser(unsigned userId) {
 	int bytes = 0;
 	User* tempUser = readUser(bytes);
 	while(file) {
-		if(tempUser->getId() != userId) {
+		if(tempUser->getId() != id) {
 			copyBytes(ofs, bytes);
 		};
 		delete tempUser;
@@ -99,34 +92,10 @@ void UserFileHandler::deleteUser(unsigned userId) {
 	}
 
 	ofs.close();
-	changeFile(tempFileName.c_str(), usersFileName.c_str());
+	changeFile(Config::fileNames(6).c_str(), Config::fileNames(0).c_str());
 	if(index < getFileSize()) {
 		file.seekg(index);
 	}
 	delete tempUser;
-}
 
-int UserFileHandler::getLastId() {
-	if(!isOpen()) throw std::runtime_error("file can not be opened u108");
-
-	int largestId = 100;
-	if(getFileSize() == 0) return largestId;
-	int index = file.tellg();
-	file.seekg(0);
-
-	User* tempUser;
-	do {
-		std::cout << "do()" << '\n';
-		tempUser = readUser();
-		std::cout << tempUser->getFirstName() << ' ' << tempUser->getId() << '\n';
-		if(tempUser->getId() >= largestId) {
-			largestId = tempUser->getId() + 1;
-		}
-		delete tempUser;
-	} while(file);
-
-	file.clear();
-	file.seekg(index);
-	
-	return largestId;
 }

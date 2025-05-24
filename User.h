@@ -1,8 +1,7 @@
 #pragma once
 #include "String.h"
-#include "UserFileHandler.h"
-#include "MessageFileHandler.h"
 #include <stdint.h>
+#include "UserFileHandler.h"
 
 enum class UserType:uint8_t {
 	Admin,

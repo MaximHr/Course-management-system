@@ -1,7 +1,7 @@
 #include "String.h"
 
 namespace {
-	unsigned defaultCapacity = 8;
+	const unsigned defaultCapacity = 8;
 	unsigned resizeFactor = 2;
 
 	unsigned calculateStringCapacity(unsigned n) {

@@ -1,27 +1,23 @@
+#include "Config.h"
 #include "System.h"
-String usersFileName = "users.dat";
-String messagesFileName = "messages.dat";
-String coursesFileName = "courses.dat";
-String tempFileName = "temp.dat";
 
-unsigned System::userIdCounter = 100;
-UserFileHandler System::userFileHandler(usersFileName, userIdCounter);
-MessageFileHandler System::messageFileHandler(messagesFileName);
+UserFileHandler System::userFileHandler(Config::fileNames(0));
+IdContainer System::idContainer(Config::fileNames(1), Config::fileNames(), Config::numberOfFiles);
 
-System::System() { }
+System::System() {};
 
 unsigned System::addUser(UserType type, const String& firstName, const String& lastName, const String& password) {
 	if(user == nullptr || user->getRole() != UserType::Admin) {
 		throw std::runtime_error("Access denied.");
 	}
-	User* newUser = UserFactory::createUser(type, firstName, lastName, password, userIdCounter);
-	userIdCounter++;
-	if(userFileHandler.findUser(newUser->getId(), newUser->getHashedPassword(), true) != -1) {
-		delete newUser;
+	unsigned id = idContainer.getId(Config::fileNames(0));
+	if(userFileHandler.findUser(id, password.reverse(), true) != -1) {
+		std::cout << idContainer.getId(Config::fileNames(0)) << '\n';
 		throw std::runtime_error("User with that id already exists");
 	}
+	User* newUser = UserFactory::createUser(type, firstName, lastName, password, id);
 	userFileHandler.saveUser(newUser);
-	unsigned id = newUser->getId();
+	idContainer.increment(Config::fileNames(0));
 	delete newUser;
 
 	return id;
@@ -40,6 +36,7 @@ void System::login(unsigned id, const String& password) {
 	userFileHandler.file.seekg(pos);
 	user = userFileHandler.readUser();
 	userFileHandler.file.seekg(current);
+	
 }
 
 void System::deleteUser(unsigned id) {
@@ -66,6 +63,7 @@ void System::logout() {
 void System::copyDynamic(const System& other) {
 	user = other.user->clone();
 }
+
 void System::freeDynamic() {
 	delete user;
 	user = nullptr;

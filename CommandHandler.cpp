@@ -27,17 +27,17 @@ void CommandHandler::start() {
 }
 
 void CommandHandler::callCommand(const String& str) {
-	String trimmed = str.trim();
+	String command = str.trim();
 	try {
-		if(trimmed == "help") {
+		if(command == "help") {
 			help();
-		} else if(trimmed == "add_user") {
+		} else if(command == "add_user") {
 			addUser();
-		} else if(trimmed == "delete_user") {
+		} else if(command == "delete_user") {
 			deleteUser();
-		} else if(trimmed == "login") {
+		} else if(command == "login") {
 			login();
-		} else if(trimmed == "logout") {
+		} else if(command == "logout") {
 			system.logout();
 		}
 	} catch(const std::exception& e) {

@@ -1,6 +1,6 @@
 #include "MessageFileHandler.h"
 
-MessageFileHandler::MessageFileHandler(const String& str):FileHandler(str) { }
+MessageFileHandler::MessageFileHandler(const String& str):FileHandler(str, false) { }
 
 void MessageFileHandler::sendTo(int recieverId, const Message& message) {
 

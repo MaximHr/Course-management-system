@@ -1,5 +1,6 @@
 #pragma once
 #include "User.h"
+#include "Config.h"
 #include <iostream>
 
 class Admin: public User {

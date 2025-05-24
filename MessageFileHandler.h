@@ -1,6 +1,6 @@
 #pragma once
-#include "FileHandler.h"
 #include "String.h"
+#include "FileHandler.h"
 class Message;
 
 struct MessageFileHandler:FileHandler {
