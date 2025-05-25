@@ -3,8 +3,8 @@
 #include "UserFactory.h"
 #include "Config.h"
 
-UserFileHandler::UserFileHandler(const String& str):FileHandler(str, false) {
-	if(findUser(Config::adminId, Config::adminPassword().reverse(), false) == -1) {
+UserFileHandler::UserFileHandler(const String& str) : FileHandler(str, false) {
+	if(findUserWithPassword(Config::adminId, Config::adminPassword().reverse()) == -1) {
 		User* newUser = UserFactory::createUser(UserType::Admin);
 		saveUser(newUser);
 		delete newUser;
@@ -33,8 +33,32 @@ User* UserFileHandler::readUser() {
 	read(newUser->lastName);
 	read(newUser->hashedPassword);
 	file.read((char*)& newUser->id, sizeof(unsigned));
-	std::cout << newUser->firstName << ' ' << newUser->hashedPassword << ' ' << newUser->id << '\n';
+
 	return newUser;
+}
+
+User* UserFileHandler::getUser(unsigned id) {
+	int pos = findUser(id);
+	if(pos == -1)  {
+		throw std::runtime_error("User with that id was not found");
+	}
+
+	int current = file.tellg();
+	file.seekg(pos);
+	User* user = readUser();
+	file.seekg(current);
+	return user;
+}
+
+User* UserFileHandler::getUserByPassword(unsigned id, const String& hashedPassword) {
+	int pos = findUserWithPassword(id, hashedPassword);
+	if(pos == -1) throw std::runtime_error("Invalid credentials");
+
+	int current = file.tellg();
+	file.seekg(pos);
+	User* user = readUser();
+	file.seekg(current);
+	return user;
 }
 
 User* UserFileHandler::readUser(int& sizeInBytes) {
@@ -45,19 +69,46 @@ User* UserFileHandler::readUser(int& sizeInBytes) {
 	return user;
 }
 
-int UserFileHandler::findUser(unsigned id, const String& hashedPassword, bool searchForIdOnly) {
-	if(!isOpen()) throw std::runtime_error("file can not be opened");
+int UserFileHandler::findUser(unsigned id) {
+	if(!isOpen()) throw std::runtime_error("file cannot be opened");
 	if(getFileSize() == 0) return -1;
 
 	int index = file.tellg();
 	file.clear();
 	file.seekg(0);
+
 	User* tempUser = readUser();
 	int result = 0;
-	while (
-    (searchForIdOnly && tempUser->getId() != id) ||
-    (!searchForIdOnly && (tempUser->getId() != id || tempUser->getHashedPassword() != hashedPassword))
-	) {
+
+	while(tempUser->getId() != id) {
+		if(file.eof()) {
+			file.clear();
+			delete tempUser;
+			return -1;
+		}
+		result = file.tellg();
+		delete tempUser;
+		tempUser = readUser();
+	}
+
+	file.clear();
+	file.seekg(index);
+	delete tempUser;
+	return result;
+}
+
+int UserFileHandler::findUserWithPassword(unsigned id, const String& hashedPassword) {
+	if(!isOpen()) throw std::runtime_error("file cannot be opened");
+	if(getFileSize() == 0) return -1;
+
+	int index = file.tellg();
+	file.clear();
+	file.seekg(0);
+
+	User* tempUser = readUser();
+	int result = 0;
+
+	while(tempUser->getId() != id || tempUser->getHashedPassword() != hashedPassword) {
 		if(file.eof()) {
 			file.clear();
 			delete tempUser;
@@ -75,8 +126,8 @@ int UserFileHandler::findUser(unsigned id, const String& hashedPassword, bool se
 }
 
 void UserFileHandler::deleteUser(unsigned id) {
-	std::ofstream ofs(Config::fileNames(6).c_str(), std::ios::binary);
-	if(!ofs.is_open()) throw std::runtime_error("Failed to open temporary file for writing");
+	std::fstream output(Config::fileNames(6).c_str(), std::ios::binary | std::ios::out);
+	if(!output.is_open()) throw std::runtime_error("Failed to open temporary file for writing");
 
 	int index = file.tellg();
 	file.seekg(0);
@@ -85,13 +136,13 @@ void UserFileHandler::deleteUser(unsigned id) {
 	User* tempUser = readUser(bytes);
 	while(file) {
 		if(tempUser->getId() != id) {
-			copyBytes(ofs, bytes);
+			copyBytes(output, bytes);
 		};
 		delete tempUser;
 		tempUser = readUser(bytes);
 	}
 
-	ofs.close();
+	output.close();
 	changeFile(Config::fileNames(6).c_str(), Config::fileNames(0).c_str());
 	if(index < getFileSize()) {
 		file.seekg(index);

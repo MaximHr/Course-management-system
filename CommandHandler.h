@@ -9,6 +9,11 @@ class CommandHandler {
 	void help();
 	void login();
 	void callCommand(const String& str);
+	void addCourse();
+	void enroll();
+	void enrollWithPassword();
+	void enrollWithoutPassword();
+
 public:
 	void start();
 	CommandHandler() = default;

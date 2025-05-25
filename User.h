@@ -10,7 +10,6 @@ enum class UserType:uint8_t {
 };
 
 class User {
-private:
 protected:
 	String firstName;
 	String lastName;

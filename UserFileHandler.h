@@ -14,6 +14,9 @@ public:
 	void saveUser(const User* user);
 	User* readUser();
 	User* readUser(int& sizeInBytes);
-	int findUser(unsigned id, const String& hashedPassword, bool searchForIdOnly);
+	int findUser(unsigned id);
+	User* getUser(unsigned id);
+	User* getUserByPassword(unsigned id, const String& hashedPassword);;
+	int findUserWithPassword(unsigned id, const String& hashedPassword);
 	void deleteUser(unsigned id);
 };

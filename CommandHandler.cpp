@@ -26,6 +26,7 @@ void CommandHandler::start() {
 	} while(str != "exit");
 }
 
+
 void CommandHandler::callCommand(const String& str) {
 	String command = str.trim();
 	try {
@@ -39,6 +40,10 @@ void CommandHandler::callCommand(const String& str) {
 			login();
 		} else if(command == "logout") {
 			system.logout();
+		} else if(command == "add_course") {
+			addCourse();
+		} else if(command == "enroll") {
+			enroll();
 		}
 	} catch(const std::exception& e) {
 		std::cout << e.what() << '\n';
@@ -48,10 +53,13 @@ void CommandHandler::callCommand(const String& str) {
 void CommandHandler::login() {
 	unsigned id;
 	String pass;
+
 	std::cout << "Id: ";
 	id = getValidatedInt();
+
 	std::cout << "Password: ";
 	std::cin >> pass;
+
 	system.login(id, pass);
 	std::cout << "Login succefull!" << std::endl;
 
@@ -61,6 +69,7 @@ void CommandHandler::addUser() {
 	String firstName, lastName, password, strType;
 	UserType type;
 	bool isValidType = false;
+
 	do {
 		std:: cout << "Choose role for the user (student or teacher): ";
 		std::cin >> strType;
@@ -72,12 +81,14 @@ void CommandHandler::addUser() {
 			isValidType = true;
 		}
 	} while(!isValidType);
+	
 	std::cout << "first name: ";
 	std::cin >> firstName;
 	std::cout << "last name: ";
 	std::cin >> lastName;
 	std::cout << "password: ";
 	std::cin >> password;
+
 	unsigned id = system.addUser(type, firstName, lastName, password);
 	std::cout << "Added " << strType << ' ' << firstName << ' ' << lastName << " with ID " << id << '\n'; 
 }
@@ -93,6 +104,52 @@ void CommandHandler::help() {
 	std::cout << "logout" << '\n';
 	std::cout << "add_user | Admin only" << '\n';
 	std::cout << "delete_user | Admin only" << '\n';
+	std::cout << "add_course | Teacher only" << '\n';
+	std::cout << "enroll | Teacher or Student" << '\n';
 	std::cout << "exit" << '\n';
 }
 
+void CommandHandler::addCourse() {
+	String name, password;
+	std::cout << "name: ";
+	std::cin >> name;
+	std::cout << "password: ";
+	std::cin >> password;
+	unsigned id = system.addCourse(name, password);
+	std::cout << "Course " << name << " with id of " << id << " added successfully" << '\n';
+}
+
+void CommandHandler::enroll() {
+	bool shouldEnrollWithPassword = system.getEnrollType();
+	if(shouldEnrollWithPassword) {
+		enrollWithPassword();
+	} else {
+		enrollWithoutPassword();
+	}
+}
+
+void CommandHandler::enrollWithPassword() {
+	unsigned courseId;
+	String coursePassword;
+
+	std::cout << "Course id: ";
+	courseId = getValidatedInt();
+	std::cout << "Course password: ";
+	std::cin >> coursePassword;
+
+	system.enrollStudent(courseId, coursePassword);
+	std::cout << "You have succefully enrolled this course!" << '\n';
+};
+
+void CommandHandler::enrollWithoutPassword() {
+	unsigned courseId, studentId;
+
+	std::cout << "Course id: ";
+	courseId = getValidatedInt();
+	std::cout << "Student id: ";
+	studentId = getValidatedInt();
+
+	system.enrollStudent(studentId, courseId);
+	std::cout << "Student succefully added to course. " << '\n';
+	
+};

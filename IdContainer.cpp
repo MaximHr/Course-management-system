@@ -21,7 +21,7 @@ void IdContainer::loadLargestIds() {
 }
 
 void IdContainer::saveIdCounters() {
-	FileHandler ofs(Config::fileNames(1).c_str(), false);
+	FileHandler ofs(Config::fileNames(6).c_str(), false);
 	if(!ofs.isOpen()) throw std::runtime_error("Failed to open temporary file for writing");
 
 	for(int i = 0;i < length;i++) {
@@ -38,7 +38,6 @@ void IdContainer::free() {
 }
 
 IdContainer::IdContainer(const String& fileName, const String* names, int length):fileHandler(fileName, false) {
-	std::cout << "IDCONTAINTER " << fileName << "\n";
 	if(names == nullptr) throw std::invalid_argument("argument can not be null pointer");
 	this->length = length;
 	idCreators = new IdCreator[length];

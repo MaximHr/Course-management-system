@@ -3,15 +3,23 @@
 #include "Student.h"
 #include "Assignment.h"
 #include "String.h"
+#include "CourseFileHandler.h"
 
 class Course {
-	Teacher teacher;
-	Student* students;
 	String name;
 	String hashedPassword;
-	Assignment* assignments;
-};
+	unsigned ownerId;
+	unsigned id;
+	unsigned studentsCount;
 
-//файл с курсове: учителя, ид на студенти, парола, име
-//файл с асайнменти: текст, 
-//файл с юзъри: не го променяме
+public:
+	friend Course* CourseFileHandler::readCourse();
+	Course() = default;
+	Course(const String& name, const String& password, unsigned ownerId, unsigned id);
+	void incrementStudentsCount();
+	unsigned getStudentsCount() const;
+	unsigned getId() const;
+	const String& getName() const;
+	const String& getHashedPassword() const;
+	unsigned getOwnerId() const;
+};

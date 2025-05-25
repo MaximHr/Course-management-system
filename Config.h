@@ -10,7 +10,7 @@ public:
     }
 
     static const int numberOfFiles = 7;
-    static const String* fileNames() {
+    const static String* fileNames() {
 			static String names[numberOfFiles] = {
 				"users.dat",
 				"ids.dat",
@@ -27,13 +27,13 @@ public:
 				throw std::invalid_argument("invalid index");
 			}
 			static String names[numberOfFiles] = {
-				String("users.dat"),
-				String("ids.dat"),
-				String("homeworks.dat"),
-				String("courses.dat"),
-				String("assignments.dat"),
-				String("messages.dat"),
-				String("temp.dat")
+				"users.dat",
+				"ids.dat",
+				"homeworks.dat",
+				"courses.dat",
+				"assignments.dat",
+				"messages.dat",
+				"temp.dat"
 			};
 			return names[i];
     }

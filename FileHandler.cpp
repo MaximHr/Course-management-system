@@ -45,14 +45,6 @@ void FileHandler::write(const String& str) {
 	file.write((const char*) str.c_str(), length);
 }
 
-void FileHandler::write(const char* data, unsigned bytes) {
-	if(data == nullptr) throw std::invalid_argument("Argument cannot be null pointer");
-	if(!isOpen()) throw std::runtime_error("File can not be opened 37.");
-
-	file.seekp(0, std::ios::end);
-	file.write(data, bytes);
-}
-
 void FileHandler::read(String& str) {
 	if(!isOpen()) throw std::runtime_error("File can not be opened 49.");
 	unsigned length;
@@ -63,11 +55,12 @@ void FileHandler::read(String& str) {
 	str = buffer;
 }
 
-void FileHandler::copyBytes(std::ofstream& ofs, int bytes) {
+void FileHandler::copyBytes(std::fstream& output, int bytes) {
+	if(bytes == 0) return;
 	file.seekg(-bytes, std::ios::cur);
 	char buffer[bytes];
 	file.read(buffer, bytes);
-	ofs.write((const char*)buffer, bytes);
+	output.write((const char*)buffer, bytes);
 }
 
 void FileHandler::changeFile(const char* strFrom, const char* strTo) {
@@ -95,7 +88,6 @@ void FileHandler::close() {
 FileHandler::~FileHandler() {
 	close();
 }
-
 
 int FileHandler::getFileSize() {
 	if(!isOpen()) throw std::runtime_error("File can not be opened. 85");
