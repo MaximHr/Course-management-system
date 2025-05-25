@@ -3,6 +3,7 @@
 
 UserFileHandler System::userFileHandler(Config::fileNames(0));
 CourseFileHandler System::courseFileHandler(Config::fileNames(3));
+AssignmentFileHandler System::assignmentFileHandler(Config::fileNames(4));
 
 IdContainer System::idContainer(Config::fileNames(1), Config::fileNames(), Config::numberOfFiles);
 
@@ -122,6 +123,29 @@ void System::enrollStudent(unsigned studentId, unsigned courseId) {
 	courseFileHandler.addStudentId(*course, studentId);
 	delete newUser;
 	delete course;
+}
+
+unsigned System::addAssignment(unsigned courseId, const String& name) {
+	if(user == nullptr || user->getRole() != UserType::Teacher) {
+		throw std::runtime_error("Access denied.");
+	}
+	Course* course = courseFileHandler.getCourse(courseId);
+	if(course->getOwnerId() != user->getId()) {
+		delete course;
+		throw std::runtime_error("Access denied.");
+	}
+	unsigned id = idContainer.getId(Config::fileNames(4));
+	if(assignmentFileHandler.findAssignment(id) != -1) {
+		delete course;
+		throw std::runtime_error("Assignment with that id already exists");
+	}
+
+	Assignment assignment(name, id, courseId);
+	assignmentFileHandler.saveAssignment(assignment);
+	idContainer.increment(Config::fileNames(4));
+	delete course;
+
+	return assignment.getId();
 }
 
 void System::logout() {

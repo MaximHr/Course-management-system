@@ -11,9 +11,9 @@ class Course {
 	unsigned ownerId;
 	unsigned id;
 	unsigned studentsCount;
+	friend Course* CourseFileHandler::readCourse();
 
 public:
-	friend Course* CourseFileHandler::readCourse();
 	Course() = default;
 	Course(const String& name, const String& password, unsigned ownerId, unsigned id);
 	void incrementStudentsCount();

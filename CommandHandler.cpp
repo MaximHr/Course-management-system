@@ -44,6 +44,8 @@ void CommandHandler::callCommand(const String& str) {
 			addCourse();
 		} else if(command == "enroll") {
 			enroll();
+		} else if(command == "assign_homework") {
+			assignHomework();
 		}
 	} catch(const std::exception& e) {
 		std::cout << e.what() << '\n';
@@ -106,6 +108,7 @@ void CommandHandler::help() {
 	std::cout << "delete_user | Admin only" << '\n';
 	std::cout << "add_course | Teacher only" << '\n';
 	std::cout << "enroll | Teacher or Student" << '\n';
+	std::cout << "assign_homework | Teacher only" << '\n';
 	std::cout << "exit" << '\n';
 }
 
@@ -138,7 +141,7 @@ void CommandHandler::enrollWithPassword() {
 	std::cin >> coursePassword;
 
 	system.enrollStudent(courseId, coursePassword);
-	std::cout << "You have succefully enrolled this course!" << '\n';
+	std::cout << "You have succefully enrolled this!" << '\n';
 };
 
 void CommandHandler::enrollWithoutPassword() {
@@ -153,3 +156,16 @@ void CommandHandler::enrollWithoutPassword() {
 	std::cout << "Student succefully added to course. " << '\n';
 	
 };
+
+void CommandHandler::assignHomework() {
+	unsigned courseId;
+	String name;
+
+	std::cout << "Course id: ";
+	courseId = getValidatedInt();
+	std::cout << "Homework name: ";
+	std::cin >> name;
+
+	unsigned id = system.addAssignment(courseId, name);
+	std::cout << "Homework with id of " << id << " added." << '\n';
+}

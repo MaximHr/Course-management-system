@@ -13,6 +13,7 @@ class CommandHandler {
 	void enroll();
 	void enrollWithPassword();
 	void enrollWithoutPassword();
+	void assignHomework();
 
 public:
 	void start();

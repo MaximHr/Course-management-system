@@ -7,12 +7,14 @@
 #include "IdContainer.h"
 #include "UserFileHandler.h"
 #include "CourseFileHandler.h"
+#include "AssignmentFileHandler.h"
 #include "Course.h"
 
 class System {
 	static IdContainer idContainer;
 	static UserFileHandler userFileHandler;
 	static CourseFileHandler courseFileHandler;
+	static AssignmentFileHandler assignmentFileHandler;
 	User* user;
 	void copyDynamic(const System& other);
 	void freeDynamic();
@@ -30,4 +32,5 @@ public:
 	bool getEnrollType() const;
 	void enrollStudent(unsigned studentId, unsigned courseId);
 	void enrollStudent(unsigned courseId, const String& coursePassword);
+	unsigned addAssignment(unsigned courseId, const String& name);
 };

@@ -16,7 +16,6 @@ void CourseFileHandler::saveCourse(const Course& course, FileHandler& fs) {
 	fs.file.write((const char*)& studentsCount, sizeof(studentsCount));
 }
 
-
 Course* CourseFileHandler::readCourse() {
 	Course* course = new Course();
 
@@ -116,9 +115,15 @@ bool CourseFileHandler::findStudentId(unsigned courseId, unsigned studentId, uns
 	return 0;
 }
 
-//TODO 2. refactor findCourse(id) and findCourseWithPassword.
-//TODO 3. same thing as 2. but for findUser in UserFileHandler
 int CourseFileHandler::findCourse(unsigned id) {
+	return findCourseMatcher(id, "", false);
+}
+
+int CourseFileHandler::findCourseWithPassword(unsigned id, const String& hashedPassword) {
+	return findCourseMatcher(id, hashedPassword, true);
+}
+
+int CourseFileHandler::findCourseMatcher(unsigned id, const String& hashedPassword, bool shouldCheckPassword) {
 	if(!isOpen()) throw std::runtime_error("file cannot be opened");
 	if(getFileSize() == 0) return -1;
 
@@ -128,7 +133,10 @@ int CourseFileHandler::findCourse(unsigned id) {
 	Course* course = readCourse();
 	int result = 0;
 
-	while(course->getId() != id) {
+	while(
+		(!shouldCheckPassword && course->getId() != id) || 
+		(shouldCheckPassword && (course->getId() != id || course->getHashedPassword() != hashedPassword))
+	) {
 		if(!file) {
 			file.clear();
 			delete course;
@@ -137,33 +145,6 @@ int CourseFileHandler::findCourse(unsigned id) {
 		result = file.tellg();
 		delete course;
 		course = readCourse();
-	}
-
-	file.clear();
-	file.seekg(index);
-	delete course;
-	return result;
-}
-
-int CourseFileHandler::findCourseWithPassword(unsigned id, const String& hashedPassword) {
-	if(!isOpen()) throw std::runtime_error("file cannot be opened");
-	if(getFileSize() == 0) return -1;
-
-	int index = file.tellg();
-	file.clear();
-	file.seekg(0);
-	Course* course = readCourse();
-	int result = 0;
-
-	while(course->getId() != id || course->getHashedPassword() != hashedPassword) {
-		if(!file) {
-			file.clear();
-			delete course;
-			return -1;
-		}
-		result = file.tellg();
-		delete course;
-		course = readCourse();	
 	}
 
 	file.clear();

@@ -70,34 +70,14 @@ User* UserFileHandler::readUser(int& sizeInBytes) {
 }
 
 int UserFileHandler::findUser(unsigned id) {
-	if(!isOpen()) throw std::runtime_error("file cannot be opened");
-	if(getFileSize() == 0) return -1;
-
-	int index = file.tellg();
-	file.clear();
-	file.seekg(0);
-
-	User* tempUser = readUser();
-	int result = 0;
-
-	while(tempUser->getId() != id) {
-		if(file.eof()) {
-			file.clear();
-			delete tempUser;
-			return -1;
-		}
-		result = file.tellg();
-		delete tempUser;
-		tempUser = readUser();
-	}
-
-	file.clear();
-	file.seekg(index);
-	delete tempUser;
-	return result;
+	return findUserMatcher(id, "", false);
 }
 
 int UserFileHandler::findUserWithPassword(unsigned id, const String& hashedPassword) {
+	return findUserMatcher(id, hashedPassword, true);
+}
+
+int UserFileHandler::findUserMatcher(unsigned id, const String& hashedPassword, bool shouldCheckPassword) {
 	if(!isOpen()) throw std::runtime_error("file cannot be opened");
 	if(getFileSize() == 0) return -1;
 
@@ -108,7 +88,10 @@ int UserFileHandler::findUserWithPassword(unsigned id, const String& hashedPassw
 	User* tempUser = readUser();
 	int result = 0;
 
-	while(tempUser->getId() != id || tempUser->getHashedPassword() != hashedPassword) {
+	while (
+		(shouldCheckPassword && (tempUser->getId() != id || tempUser->getHashedPassword() != hashedPassword))
+		|| (!shouldCheckPassword && (tempUser->getId() != id))
+	) {
 		if(file.eof()) {
 			file.clear();
 			delete tempUser;

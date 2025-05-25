@@ -15,9 +15,9 @@ protected:
 	String lastName;
 	String hashedPassword;
 	unsigned id;
+	friend User* UserFileHandler::readUser();
 
 public:
-	friend User* UserFileHandler::readUser();
 	virtual UserType getRole() const = 0;
 	virtual User* clone() const = 0;
 	const String& getFirstName() const;

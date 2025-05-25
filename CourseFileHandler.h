@@ -3,6 +3,8 @@
 class Course;
 
 class CourseFileHandler: public FileHandler {
+private:
+	int findCourseMatcher(unsigned id, const String& hashedPassword, bool shouldCheckPassword);
 public:
 	CourseFileHandler() = default;
 	~CourseFileHandler() = default;
