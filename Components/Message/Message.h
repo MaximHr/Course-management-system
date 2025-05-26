@@ -1,25 +1,28 @@
 #pragma once
 #include "../../Utils/String.h"
 #include "../../Users/User.h"
+#include "../../FileHandlers/MessageFileHandler.h"
 #include <iostream>
 #include <fstream>
 #include <ctime>
 
 class Message {
 	String text;
-	const User* sender;
-	void setTime();
 	String formattedTime;
-	int recieverId;
+	unsigned id;
+	unsigned recieverId;
+	unsigned senderId;
+	
+	friend Message* MessageFileHandler::readMessage();
+	void setTime();
 public:
 	Message() = default;
-	Message(const User* sender);
-	Message(const String& text, const User* sender);
+	Message(unsigned id, const String& text, unsigned recieverId, unsigned senderId);
 	const String& getText() const;
 	const String& getFormattedTime() const;
-	const User* getSender() const;
-	friend std::istream& operator>>(std::istream& input, Message& message);
+	unsigned getSenderId() const;
+	unsigned getRecieverId() const;
+	unsigned getId() const;
 };
 
-std::istream& operator>>(std::istream& input, Message& message);
 std::ostream& operator<<(std::ostream& output, const Message& message);

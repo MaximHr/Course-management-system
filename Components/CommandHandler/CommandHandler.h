@@ -17,6 +17,9 @@ class CommandHandler {
 	void submitHomework();
 	void viewHomework();
 	void gradeHomework();
+	void messageUser();
+	void messageAll();
+	void messageCourse();
 
 public:
 	void start();

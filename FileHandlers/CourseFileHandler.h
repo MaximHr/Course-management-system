@@ -4,11 +4,12 @@ class Course;
 
 class CourseFileHandler: public FileHandler {
 private:
+	Course* getCourseMatcher(unsigned id, const String& hashedPassword, bool shouldCheckPassword);
 	int findCourseMatcher(unsigned id, const String& hashedPassword, bool shouldCheckPassword);
 public:
 	CourseFileHandler() = default;
-	~CourseFileHandler() = default;
 	CourseFileHandler(const String& str);
+
 	void saveCourse(const Course& course, FileHandler& fs);
 	void addStudentId(Course& course, unsigned studentId);
 	Course* readCourse();

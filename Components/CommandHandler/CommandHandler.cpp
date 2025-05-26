@@ -56,6 +56,16 @@ void CommandHandler::callCommand(const String& str) {
 			gradeHomework();
 		} else if(command == "view_grades") {
 			system.viewGrades();
+		} else if(command == "message") {
+			messageUser();
+		} else if(command == "message_all") {
+			messageAll();
+		} else if(command == "message_students") {
+			messageCourse();
+		} else if(command == "mailbox") {
+			system.viewMessages();
+		} else if(command == "clear_mailbox") {
+			system.deleteMessages();
 		}
 	} catch(const std::exception& e) {
 		std::cout << e.what() << '\n';
@@ -121,6 +131,11 @@ void CommandHandler::help() {
 	std::cout << "view_homeworks | Teacher only" << '\n';
 	std::cout << "grade_homework | Teacher only" << '\n';
 	std::cout << "view_grades | Student only" << '\n';
+	std::cout << "mailbox" << '\n';
+	std::cout << "clear_mailbox" << '\n';
+	std::cout << "message" << '\n';
+	std::cout << "message_all | Admin only" << '\n';
+	std::cout << "message_students | Teacher only" << '\n';
 	std::cout << "logout" << '\n';
 	std::cout << "exit" << '\n';
 }
@@ -215,3 +230,32 @@ void CommandHandler::gradeHomework() {
 	std::cout << "Homework graded." << '\n';
 }
 
+void CommandHandler::messageUser() {
+	unsigned recieverId;
+	String text;
+	std::cout << "Reciever id: ";
+	recieverId = getValidInfo<unsigned>();
+	std::cout << "Message: ";
+	std::cin >> text;
+	system.messageUser(recieverId, text);
+	std::cout << "Message sent succefully" << '\n';
+}
+
+void CommandHandler::messageAll() {
+	String text;
+	std::cout << "Message: ";
+	std::cin >> text;
+	system.messageAll(text);
+	std::cout << "Message sent succefully" << '\n';
+}
+
+void CommandHandler::messageCourse() {
+	unsigned courseId;
+	String text;
+	std::cout << "Course id: ";
+	courseId = getValidInfo<unsigned>();
+	std::cout << "Message: ";
+	std::cin >> text;
+	system.messageCourse(courseId, text);
+	std::cout << "Message sent succefully" << '\n';
+}

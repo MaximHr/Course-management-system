@@ -5,9 +5,10 @@ System::System() :
 	user(nullptr), 
 	verifier(user),
 	userFileHandler(Config::fileNames(0)),
+	submissionFileHandler(Config::fileNames(2)),
 	courseFileHandler(Config::fileNames(3)),
 	assignmentFileHandler(Config::fileNames(4)),
-	submissionFileHandler(Config::fileNames(2)),
+	messageFileHandler(Config::fileNames(5)),
 	idContainer(Config::fileNames(1), Config::fileNames(), Config::numberOfFiles) 
 { }
 
@@ -93,30 +94,31 @@ void System::enrollStudent(unsigned courseId, const String& coursePassword) {
 
 void System::enrollStudent(unsigned studentId, unsigned courseId) {
 	verifier.requireTeacher();
-	
-	Course* course = courseFileHandler.getCourse(courseId);
-	User* newUser = userFileHandler.getUser(studentId);
+	Course* course = nullptr;
+	User* newUser = nullptr;
 
-	if(newUser->getRole() != UserType::Student) {
-		delete course;
-		delete newUser;
-		throw std::runtime_error("Only students can be enrolled.");
-	}
-	if(user->getId() != course->getOwnerId()) {
-		delete course;
-		delete newUser;
-		throw std::runtime_error("Access denied.");
-	}
+	try {
+		course = courseFileHandler.getCourse(courseId);
+		newUser = userFileHandler.getUser(studentId);
 
-	if(courseFileHandler.findStudentId(courseId, studentId, course->getStudentsCount())) {
-		delete course;
-		delete newUser;
-		throw std::runtime_error("Student has already enrolled");
-	}
+		if(newUser->getRole() != UserType::Student) {
+			throw std::runtime_error("Only students can be enrolled.");
+		}
+		if(user->getId() != course->getOwnerId()) {
+			throw std::runtime_error("Access denied.");
+		}
+		if(courseFileHandler.findStudentId(courseId, studentId, course->getStudentsCount())) {
+			throw std::runtime_error("Student has already enrolled.");
+		}
 
-	courseFileHandler.addStudentId(*course, studentId);
-	delete newUser;
-	delete course;
+		courseFileHandler.addStudentId(*course, studentId);
+		delete newUser;
+		delete course;
+	} catch (const std::exception& e) {
+		delete newUser;
+		delete course;
+		throw;
+	}
 }
 
 unsigned System::addAssignment(unsigned courseId, const String& name) {
@@ -179,7 +181,7 @@ void System::printSubmissions(unsigned assignmentId) {
 		throw std::runtime_error("Access denied");
 	}
 	std::cout << "Assignment " << assignment->getName() << " for course " << course->getName() << " : \n";
-	submissionFileHandler.printSubmissions(assignmentId);
+	submissionFileHandler.viewSubmissions(assignmentId, false);
 
 	delete assignment;
 	delete course;
@@ -211,13 +213,53 @@ void System::gradeSubmission(unsigned submissionId, double newGrade) {
 		delete submission;
 		delete assignment;
 		delete course;
-		throw std::runtime_error(e.what());
+		throw;
 	}
 }
 
+void System::messageAll(const String& text) {
+	verifier.requireAdmin();
+}
+
+void System::messageCourse(unsigned courseId, const String& text) {
+	verifier.requireTeacher();
+}
+
+void System::messageUser(unsigned recieverId, const String& text) {
+	verifier.requireLogged();
+	unsigned id = idContainer.getId(Config::fileNames(5));
+	
+	if(user->getId() == recieverId) {
+		throw std::runtime_error("You can not message yourself");
+	}
+	if(userFileHandler.findUser(recieverId) == -1) {
+		throw std::runtime_error("User with that id was not found");	
+	}
+	if(messageFileHandler.findMessage(id) != -1) {
+		throw std::runtime_error("Message with that id already exists.");	
+	}
+
+	const Message message(id, text, recieverId, user->getId());
+
+	messageFileHandler.saveMessage(message, messageFileHandler);
+	messageFileHandler.file.flush();
+	idContainer.increment(Config::fileNames(5));
+}
+
+
 void System::viewGrades() {
 	verifier.requireStudent();
-	
+	submissionFileHandler.viewSubmissions(user->getId(), true);
+}
+
+void System::viewMessages() {
+	verifier.requireLogged();
+	messageFileHandler.printMessages(user->getId());
+}
+
+void System::deleteMessages() {
+	verifier.requireLogged();
+	messageFileHandler.deleteMessages(user->getId());
 }
 
 void System::logout() {

@@ -66,8 +66,13 @@ void CourseFileHandler::addStudentId(Course& course, unsigned studentId) {
 	delete tempCourse;
 }
 
-Course* CourseFileHandler::getCourse(unsigned id) {
-	int pos = findCourse(id);
+Course* CourseFileHandler::getCourseMatcher(unsigned id, const String& hashedPassword, bool shouldCheckPassword) {
+	int pos = -1;
+	if(!shouldCheckPassword) {
+		pos = findCourse(id);
+	} else {
+		pos = findCourseWithPassword(id, hashedPassword);
+	}
 	if(pos == -1) throw std::runtime_error("Course with that id was not found");
 
 	int current = file.tellg();
@@ -77,15 +82,12 @@ Course* CourseFileHandler::getCourse(unsigned id) {
 	return course;
 }
 
-Course* CourseFileHandler::getCourse(unsigned id, const String& hashedPassword) {
-	int pos = findCourseWithPassword(id, hashedPassword);
-	if(pos == -1) throw std::runtime_error("Course was not found");
+Course* CourseFileHandler::getCourse(unsigned id) {
+	return getCourseMatcher(id, "", false);
+}
 
-	int current = file.tellg();
-	file.seekg(pos);
-	Course* course = readCourse();
-	file.seekg(current);
-	return course;
+Course* CourseFileHandler::getCourse(unsigned id, const String& hashedPassword) {
+	return getCourseMatcher(id, hashedPassword, true);
 }
 
 bool CourseFileHandler::findStudentId(unsigned courseId, unsigned studentId, unsigned studentsCount) {

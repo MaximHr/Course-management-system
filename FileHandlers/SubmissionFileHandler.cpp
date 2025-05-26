@@ -79,29 +79,37 @@ int SubmissionFileHandler::findSubmission(unsigned id) {
 	return result;
 }
 
-void SubmissionFileHandler::printSubmissions(unsigned assignmentId) {
+void SubmissionFileHandler::printHomework(const Submission* submission) {
+	std::cout << "| Id: " << submission->getId() << " | Answer: " << submission->getAnswer() << " | Grade: ";
+	if(!submission->isGraded()) {
+		std::cout << "not graded" << '\n';
+	} else {
+		std::cout << submission->getGrade() << '\n';
+	}
+}
+
+void SubmissionFileHandler::viewSubmissions(unsigned searchedId, bool isViewingAsParticipant) {
 	if(!isOpen()) throw std::runtime_error("file cannot be opened");
-	if(getFileSize() == 0) return;
-	bool containsSubmissions = false;
+	if(getFileSize() == 0) {
+		std::cout << "There are no submited homeworks yet." << '\n';
+		return;
+	};
 
 	int index = setAtBeginning();
 	Submission* submission = readSubmission();
+	bool containsSubmissions = false;
 	
 	while(!file.eof()) {
-		if(submission->getAssignmentId() == assignmentId) {
+		if(!isViewingAsParticipant && (submission->getAssignmentId() == searchedId) ||
+			 isViewingAsParticipant && (submission->getStudentId() == searchedId) ) {
 			containsSubmissions = true;
-			std::cout << "| Id: " << submission->getId() << " | Answer: " << submission->getAnswer() << " | Grade: ";
-			if(!submission->isGraded()) {
-				std::cout << "not graded" << '\n';
-			} else {
-				std::cout << "" << submission->getGrade() << '\n';
-			}
+			printHomework(submission);
 		}
 		delete submission;
 		submission = readSubmission();
 	}
 	if(!containsSubmissions) {
-		std::cout << "There are no homeworks yet." << '\n';
+		std::cout << "There are no submited homeworks yet." << '\n';
 	}
 
 	file.clear();
@@ -114,9 +122,9 @@ void SubmissionFileHandler::updateSubmission(Submission& submission) {
 	if(!output.isOpen()) throw std::runtime_error("Failed to open temporary file for writing");
 
 	int index = setAtBeginning();
-
 	int bytes = 0;
 	Submission* tempSubmission = readSubmission(bytes);
+
 	while(file) {
 		if(tempSubmission->getId() != submission.getId()) {
 			copyBytes(output.file, bytes);

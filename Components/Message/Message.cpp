@@ -1,11 +1,25 @@
 #include "Message.h"
 
+Message::Message(unsigned id, const String& text, unsigned recieverId, unsigned senderId) : 
+	id(id), text(text), recieverId(recieverId), senderId(senderId) 
+{
+	setTime();
+}
+
 const String& Message::getText() const {
 	return text;
 }
 
-const User* Message::getSender() const {
-	return sender;
+unsigned Message::getSenderId() const {
+	return senderId;
+}
+
+unsigned Message::getRecieverId() const {
+	return recieverId;
+}
+
+unsigned Message::getId() const {
+	return id;
 }
 
 const String& Message::getFormattedTime() const {
@@ -17,30 +31,12 @@ void Message::setTime() {
 	time(&now);
 	formattedTime = ctime(&now);
 	formattedTime = formattedTime.remove(16, 3); //removes the seconds
-	formattedTime.pop();
-}
-
-Message::Message(const User* user):sender(user) {
-	setTime();
-};
-
-Message::Message(const String& text, const User* user):text(text), sender(sender) { 
-	setTime();
-}
-
-std::istream& operator>>(std::istream& input, Message& message) {
-	std::cout << "Type your message: ";
-	input >> message.text;
-	message.setTime();
-
-	return input;
 }
 
 std::ostream& operator<<(std::ostream& output, const Message& message) {
-	output << message.getFormattedTime() << " | "
-				 << message.getSender()->getFirstName() << " " 
-				 << message.getSender()->getLastName() << ": " 
-				 << message.getText() << '\n';
+	output<< message.getFormattedTime() 
+				<< message.getText()
+				<< "\n______________________\n";
 				 
 	return output;
 }

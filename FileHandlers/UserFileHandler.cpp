@@ -37,8 +37,13 @@ User* UserFileHandler::readUser() {
 	return newUser;
 }
 
-User* UserFileHandler::getUser(unsigned id) {
-	int pos = findUser(id);
+User* UserFileHandler::getUserMatcher(unsigned id, const String& hashedPassword, bool shouldCheckForPassword) {
+	int pos = -1;
+	if(!shouldCheckForPassword) {
+		pos = findUser(id);
+	} else {
+		pos = findUserWithPassword(id, hashedPassword);
+	}
 	if(pos == -1)  {
 		throw std::runtime_error("User with that id was not found");
 	}
@@ -50,15 +55,12 @@ User* UserFileHandler::getUser(unsigned id) {
 	return user;
 }
 
-User* UserFileHandler::getUserByPassword(unsigned id, const String& hashedPassword) {
-	int pos = findUserWithPassword(id, hashedPassword);
-	if(pos == -1) throw std::runtime_error("Invalid credentials");
+User* UserFileHandler::getUser(unsigned id) {
+	return getUserMatcher(id, "", false);
+}
 
-	int current = file.tellg();
-	file.seekg(pos);
-	User* user = readUser();
-	file.seekg(current);
-	return user;
+User* UserFileHandler::getUserByPassword(unsigned id, const String& hashedPassword) {
+	return getUserMatcher(id, hashedPassword, true);
 }
 
 User* UserFileHandler::readUser(int& sizeInBytes) {
@@ -112,7 +114,7 @@ void UserFileHandler::deleteUser(unsigned id) {
 	int index = setAtBeginning();
 	int bytes = 0;
 	User* tempUser = readUser(bytes);
-	
+
 	while(file) {
 		if(tempUser->getId() != id) {
 			copyBytes(output, bytes);
@@ -127,5 +129,4 @@ void UserFileHandler::deleteUser(unsigned id) {
 		file.seekg(index);
 	}
 	delete tempUser;
-
 }

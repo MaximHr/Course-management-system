@@ -3,11 +3,21 @@
 #include "FileHandler.h"
 class Message;
 
-struct MessageFileHandler:FileHandler {
+enum class MessageExecutionType {
+	DELETE_MESSAGE,
+
+};
+
+class MessageFileHandler : public FileHandler {
+public:
 	MessageFileHandler() = default;
 	MessageFileHandler(const String& str);
-	void sendTo(int recieverId, const Message& message);
-	// void sentToCourse(, const Message& message);
-	void viewMessage(int recieverId);
-	void sentToEveryone(const Message& message);
-};
+
+	void saveMessage(const Message& message, FileHandler& fs);
+	void printMessages(unsigned recieverId);
+	int findMessage(unsigned id);
+	Message* readMessage();
+	Message* readMessage(int& bytes);
+	Message* getMessage(unsigned id);
+	void deleteMessages(unsigned recieverId);
+};;

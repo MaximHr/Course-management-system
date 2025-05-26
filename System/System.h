@@ -8,9 +8,11 @@
 #include "../FileHandlers/CourseFileHandler.h"
 #include "../FileHandlers/AssignmentFileHandler.h"
 #include "../FileHandlers/SubmissionFileHandler.h"
+#include "../FileHandlers/MessageFileHandler.h"
 #include "SystemVerifier.h"
 #include "../Components/Course/Course.h"
 #include "../Components/Submission/Submission.h"
+#include "../Components/Message/Message.h"
 #include <exception>
 
 class System {
@@ -19,6 +21,7 @@ class System {
 	CourseFileHandler courseFileHandler;
 	AssignmentFileHandler assignmentFileHandler;
 	SubmissionFileHandler submissionFileHandler;
+	MessageFileHandler messageFileHandler;
 	User* user;
 	SystemVerifier verifier;
 	
@@ -42,4 +45,9 @@ public:
 	void printSubmissions(unsigned assignmentId);
 	void gradeSubmission(unsigned submissionId, double newGrade);
 	void viewGrades();
+	void messageAll(const String& text);
+	void messageCourse(unsigned courseId, const String& text);
+	void messageUser(unsigned recieverId, const String& text);
+	void viewMessages();
+	void deleteMessages();
 };

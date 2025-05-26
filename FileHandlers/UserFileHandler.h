@@ -8,6 +8,7 @@ class User;
 
 class UserFileHandler: public FileHandler {
 private:
+	User* getUserMatcher(unsigned id, const String& hashedPassword, bool shouldCheckForPassword);
 	int findUserMatcher(unsigned id, const String& hashedPassword, bool shouldCheckPassword);
 public:
 	UserFileHandler() = default;

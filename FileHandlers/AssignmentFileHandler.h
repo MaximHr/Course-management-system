@@ -5,7 +5,6 @@ class Assignment;
 class AssignmentFileHandler: public FileHandler {
 public:
 	AssignmentFileHandler() = default;
-	~AssignmentFileHandler() = default;
 	AssignmentFileHandler(const String& str);
 
 	Assignment* readAssignment();
