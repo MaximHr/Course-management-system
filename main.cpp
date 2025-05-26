@@ -1,4 +1,4 @@
-#include "CommandHandler.h"
+#include "./Components/CommandHandler/CommandHandler.h"
 
 int main() {
 	CommandHandler c;
