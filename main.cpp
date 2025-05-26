@@ -1,5 +1,3 @@
-#include <iostream>
-#include "Message.h"
 #include "CommandHandler.h"
 
 int main() {

@@ -1,9 +1,11 @@
 #include "Config.h"
 #include "System.h"
+#include "SystemVerifier.h"
 
 UserFileHandler System::userFileHandler(Config::fileNames(0));
 CourseFileHandler System::courseFileHandler(Config::fileNames(3));
 AssignmentFileHandler System::assignmentFileHandler(Config::fileNames(4));
+SubmissionFileHandler System::submissionFileHandler(Config::fileNames(2));
 
 IdContainer System::idContainer(Config::fileNames(1), Config::fileNames(), Config::numberOfFiles);
 
@@ -146,6 +148,91 @@ unsigned System::addAssignment(unsigned courseId, const String& name) {
 	delete course;
 
 	return assignment.getId();
+}
+
+unsigned System::addHomework(unsigned assignmentId, const String& homework) {
+	if(user == nullptr || user->getRole() != UserType::Student) {
+		throw std::runtime_error("Access denied.");
+	}
+
+	unsigned id = idContainer.getId(Config::fileNames(2));
+	if(submissionFileHandler.findSubmission(id) != -1) {
+		throw std::runtime_error("Submission with that id already exists");
+	}
+
+	Assignment* assignment = assignmentFileHandler.getAssignment(assignmentId);
+	Course* course = courseFileHandler.getCourse(assignment->getCourseId());
+	if(!courseFileHandler.findStudentId(course->getId(), user->getId(), course->getStudentsCount())) {
+		delete assignment;
+		delete course;
+		throw std::runtime_error("Access denied.");
+	}
+
+	Submission submission(id, user->getId(), assignmentId, homework);
+
+	submissionFileHandler.saveSubmission(submission, submissionFileHandler);
+	submissionFileHandler.file.flush();
+	idContainer.increment(Config::fileNames(2));
+	delete assignment;
+	delete course;
+
+	return id;
+}
+
+void System::printSubmissions(unsigned assignmentId) {
+	if(user == nullptr || user->getRole() != UserType::Teacher) {
+		throw std::runtime_error("Access denied.");
+	}
+	Assignment* assignment = assignmentFileHandler.getAssignment(assignmentId);
+	Course* course = courseFileHandler.getCourse(assignment->getCourseId());
+	if(user->getId() != course->getOwnerId()) {
+		delete assignment;
+		delete course;
+		throw std::runtime_error("Access denied");
+	}
+	std::cout << "Assignment " << assignment->getName() << " for course " << course->getName() << " : \n";
+	submissionFileHandler.printSubmissions(assignmentId);
+
+	delete assignment;
+	delete course;
+}
+
+void System::gradeSubmission(unsigned submissionId, double newGrade) {
+	if(user == nullptr || user->getRole() != UserType::Teacher) {
+		throw std::runtime_error("Access denied.");
+	}
+	Submission* submission = nullptr;
+  Assignment* assignment = nullptr;
+  Course* course = nullptr;
+
+	try {
+		submission = submissionFileHandler.getSubmission(submissionId);
+		assignment = assignmentFileHandler.getAssignment(submission->getAssignmentId());
+		course = courseFileHandler.getCourse(assignment->getCourseId());
+
+		if(course->getOwnerId() != user->getId()) {
+			throw std::runtime_error("Access denied");
+		}
+
+		submission->setGrade(newGrade);
+		submissionFileHandler.updateSubmission(*submission);
+		delete submission;
+		delete assignment;
+		delete course;
+
+	} catch(const std::exception& e) {
+		delete submission;
+		delete assignment;
+		delete course;
+		throw std::runtime_error(e.what());
+	}
+}
+
+void System::viewGrades() {
+	if(user == nullptr || user->getRole() != UserType::Student) {
+		throw std::runtime_error("Access denied.");
+	}
+	
 }
 
 void System::logout() {

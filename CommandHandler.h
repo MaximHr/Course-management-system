@@ -14,6 +14,9 @@ class CommandHandler {
 	void enrollWithPassword();
 	void enrollWithoutPassword();
 	void assignHomework();
+	void submitHomework();
+	void viewHomework();
+	void gradeHomework();
 
 public:
 	void start();

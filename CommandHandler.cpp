@@ -2,8 +2,9 @@
 
 System CommandHandler::system;
 
-int getValidatedInt() {
-	int number;
+template <typename T>
+T getValidInfo() {
+	T number;
 	while(true) {
 		std::cin >> number;
 		if(std::cin.fail()) {
@@ -26,7 +27,6 @@ void CommandHandler::start() {
 	} while(str != "exit");
 }
 
-
 void CommandHandler::callCommand(const String& str) {
 	String command = str.trim();
 	try {
@@ -46,6 +46,14 @@ void CommandHandler::callCommand(const String& str) {
 			enroll();
 		} else if(command == "assign_homework") {
 			assignHomework();
+		} else if(command == "submit_homework") {
+			submitHomework();
+		} else if(command == "view_homeworks") {
+			viewHomework();
+		} else if(command == "grade_homework") {
+			gradeHomework();
+		} else if(command == "view_grades") {
+			system.viewGrades();
 		}
 	} catch(const std::exception& e) {
 		std::cout << e.what() << '\n';
@@ -57,14 +65,13 @@ void CommandHandler::login() {
 	String pass;
 
 	std::cout << "Id: ";
-	id = getValidatedInt();
+	id = getValidInfo<unsigned>();
 
 	std::cout << "Password: ";
 	std::cin >> pass;
 
 	system.login(id, pass);
 	std::cout << "Login succefull!" << std::endl;
-
 }
 
 void CommandHandler::addUser() {
@@ -97,18 +104,22 @@ void CommandHandler::addUser() {
 
 void CommandHandler::deleteUser() {
 	std::cout << "id: ";
-	unsigned id = getValidatedInt();
+	unsigned id = getValidInfo<unsigned>();
 	system.deleteUser(id);
 }
 
 void CommandHandler::help() {
 	std::cout << "login" << '\n';
-	std::cout << "logout" << '\n';
 	std::cout << "add_user | Admin only" << '\n';
 	std::cout << "delete_user | Admin only" << '\n';
 	std::cout << "add_course | Teacher only" << '\n';
 	std::cout << "enroll | Teacher or Student" << '\n';
 	std::cout << "assign_homework | Teacher only" << '\n';
+	std::cout << "submit_homework | Student only" << '\n';
+	std::cout << "view_homeworks | Teacher only" << '\n';
+	std::cout << "grade_homework | Teacher only" << '\n';
+	std::cout << "view_grades | Student only" << '\n';
+	std::cout << "logout" << '\n';
 	std::cout << "exit" << '\n';
 }
 
@@ -136,25 +147,24 @@ void CommandHandler::enrollWithPassword() {
 	String coursePassword;
 
 	std::cout << "Course id: ";
-	courseId = getValidatedInt();
+	courseId = getValidInfo<unsigned>();
 	std::cout << "Course password: ";
 	std::cin >> coursePassword;
 
 	system.enrollStudent(courseId, coursePassword);
-	std::cout << "You have succefully enrolled this!" << '\n';
+	std::cout << "You have succefully enrolled in this course!" << '\n';
 };
 
 void CommandHandler::enrollWithoutPassword() {
 	unsigned courseId, studentId;
 
 	std::cout << "Course id: ";
-	courseId = getValidatedInt();
+	courseId = getValidInfo<unsigned>();
 	std::cout << "Student id: ";
-	studentId = getValidatedInt();
+	studentId = getValidInfo<unsigned>();
 
 	system.enrollStudent(studentId, courseId);
 	std::cout << "Student succefully added to course. " << '\n';
-	
 };
 
 void CommandHandler::assignHomework() {
@@ -162,10 +172,44 @@ void CommandHandler::assignHomework() {
 	String name;
 
 	std::cout << "Course id: ";
-	courseId = getValidatedInt();
+	courseId = getValidInfo<unsigned>();
 	std::cout << "Homework name: ";
 	std::cin >> name;
 
 	unsigned id = system.addAssignment(courseId, name);
+	std::cout << "Assignment with id of " << id << " added." << '\n';
+}
+
+void CommandHandler::submitHomework() {
+	unsigned assignmentId;
+	String homework;
+
+	std::cout << "Assignment id: ";
+	assignmentId = getValidInfo<unsigned>();
+	std::cout << "Homework: ";
+	std::cin >> homework;
+	unsigned id = system.addHomework(assignmentId, homework);
 	std::cout << "Homework with id of " << id << " added." << '\n';
 }
+
+void CommandHandler::viewHomework() {
+	unsigned assignmentId;
+
+	std::cout << "Assignment id: ";
+	assignmentId = getValidInfo<unsigned>();
+	system.printSubmissions(assignmentId);
+}
+
+void CommandHandler::gradeHomework() {
+	unsigned submissionId;
+	double grade;
+
+	std::cout << "Homework id: ";
+	submissionId = getValidInfo<unsigned>();
+	std::cout << "Grade: ";
+	grade = getValidInfo<double>();
+
+	system.gradeSubmission(submissionId, grade);
+	std::cout << "Homework graded." << '\n';
+}
+

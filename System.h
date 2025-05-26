@@ -8,13 +8,17 @@
 #include "UserFileHandler.h"
 #include "CourseFileHandler.h"
 #include "AssignmentFileHandler.h"
+#include "SubmissionFileHandler.h"
+#include "SystemVerifier.h"
 #include "Course.h"
+#include "Submission.h"
 
 class System {
 	static IdContainer idContainer;
 	static UserFileHandler userFileHandler;
 	static CourseFileHandler courseFileHandler;
 	static AssignmentFileHandler assignmentFileHandler;
+	static SubmissionFileHandler submissionFileHandler;
 	User* user;
 	void copyDynamic(const System& other);
 	void freeDynamic();
@@ -33,4 +37,8 @@ public:
 	void enrollStudent(unsigned studentId, unsigned courseId);
 	void enrollStudent(unsigned courseId, const String& coursePassword);
 	unsigned addAssignment(unsigned courseId, const String& name);
+	unsigned addHomework(unsigned assignmentId, const String& homework);
+	void printSubmissions(unsigned assignmentId);
+	void gradeSubmission(unsigned submissionId, double newGrade);
+	void viewGrades();
 };

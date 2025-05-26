@@ -4,10 +4,12 @@ class Assignment;
 
 class AssignmentFileHandler: public FileHandler {
 public:
-	Assignment* readAssignment();
 	AssignmentFileHandler() = default;
 	~AssignmentFileHandler() = default;
 	AssignmentFileHandler(const String& str);
+
+	Assignment* readAssignment();
+	Assignment* getAssignment(unsigned id);
 	void saveAssignment(const Assignment& assignment);
 	int findAssignment(unsigned id);
 };

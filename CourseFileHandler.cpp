@@ -17,6 +17,7 @@ void CourseFileHandler::saveCourse(const Course& course, FileHandler& fs) {
 }
 
 Course* CourseFileHandler::readCourse() {
+	if(!isOpen()) throw std::runtime_error("file can not be opened");
 	Course* course = new Course();
 
 	file.read((char *)& course->ownerId, sizeof(course->ownerId));
@@ -25,7 +26,6 @@ Course* CourseFileHandler::readCourse() {
 	read(course->hashedPassword);
 	file.read((char *)& course->studentsCount, sizeof(course->studentsCount));
 	file.seekg(course->getStudentsCount() * sizeof(unsigned), std::ios::cur); // skips all student ids
-
 
 	return course;
 }

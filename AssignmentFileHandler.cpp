@@ -4,6 +4,7 @@
 AssignmentFileHandler::AssignmentFileHandler(const String& str):FileHandler(str, false) {}
 
 Assignment* AssignmentFileHandler::readAssignment() {
+	if(!isOpen()) throw std::runtime_error("file can not be opened");
 	Assignment* assignment = new Assignment();
 	
 	file.read((char *)& assignment->id, sizeof(assignment->id));
@@ -14,6 +15,8 @@ Assignment* AssignmentFileHandler::readAssignment() {
 }
 
 void AssignmentFileHandler::saveAssignment(const Assignment& assignment) {
+	if(!isOpen()) throw std::runtime_error("file can not be opened");
+
 	unsigned assignmentId = assignment.getId();
 	unsigned courseId = assignment.getCourseId();
 	
@@ -21,6 +24,20 @@ void AssignmentFileHandler::saveAssignment(const Assignment& assignment) {
 	file.write((const char*)& courseId, sizeof(courseId));
 	write(assignment.getName());
 	file.flush();
+}
+
+Assignment* AssignmentFileHandler::getAssignment(unsigned id) {
+	int pos = findAssignment(id);
+	if(pos == -1)  {
+		throw std::runtime_error("Assignment with that id was not found");
+	}
+
+	int current = file.tellg();
+	file.seekg(pos);
+	Assignment* assignment = readAssignment();
+	file.seekg(current);
+
+	return assignment;
 }
 
 int AssignmentFileHandler::findAssignment(unsigned id) {
