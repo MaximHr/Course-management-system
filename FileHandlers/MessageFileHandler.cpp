@@ -120,17 +120,3 @@ Message* MessageFileHandler::readMessage(int& bytes) {
 
 	return message;
 }
-
-// Message* MessageFileHandler::getMessage(unsigned id) {
-// 	int pos = findMessage(id);
-// 	if(pos == -1)  {
-// 		throw std::runtime_error("Message with that id was not found");
-// 	}
-
-// 	int current = file.tellg();
-// 	file.seekg(pos);
-// 	Message* message = readMessage();
-// 	file.seekg(current);
-
-// 	return message;
-// }

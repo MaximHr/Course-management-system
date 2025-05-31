@@ -23,6 +23,5 @@ public:
 	int findMessage(unsigned id);
 	Message* readMessage();
 	Message* readMessage(int& bytes);
-	Message* getMessage(unsigned id);
 	void deleteMessages(unsigned recieverId);
 };;
