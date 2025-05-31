@@ -1,9 +1,13 @@
+/*
+	Name: Maksim Hristov
+	FN: 4MI0600466
+*/
+
 #pragma once
 #include "FileHandler.h"
 class Submission;
 
 class SubmissionFileHandler: public FileHandler {
-	void printGrade(const Submission* submission);
 	void printHomework(const Submission* submission);
 public:
 	SubmissionFileHandler() = default;

@@ -1,3 +1,8 @@
+/*
+	Name: Maksim Hristov
+	FN: 4MI0600466
+*/
+
 #include "CourseFileHandler.h"
 #include "../Components/Course/Course.h"
 
@@ -5,6 +10,8 @@ CourseFileHandler::CourseFileHandler(const String& str) : FileHandler(str) {}
 
 //saves course without student ids
 void CourseFileHandler::saveCourse(const Course& course, FileHandler& fs) {
+	if(!fs.isOpen()) throw std::runtime_error("file can not be opened");
+
 	unsigned ownerId = course.getOwnerId();
 	unsigned courseId = course.getId();
 	unsigned studentsCount = course.getStudentsCount();

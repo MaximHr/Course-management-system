@@ -1,27 +1,34 @@
+/*
+	Name: Maksim Hristov
+	FN: 4MI0600466
+*/
+
 #include "UserFileHandler.h"
 #include "../Users/User.h"
 #include "../Users/UserFactory.h"
 #include "../Utils/Config.h"
+#include "../System/System.h"
 
 UserFileHandler::UserFileHandler(const String& str) : FileHandler(str) {
 	if(findUserWithPassword(Config::adminId, Config::adminPassword().reverse()) == -1) {
 		User* newUser = UserFactory::createUser(UserType::Admin);
-		saveUser(newUser);
+		saveUser(newUser, *this);
 		delete newUser;
 	}
 }
 
-void UserFileHandler::saveUser(const User* user) {
-	if(!isOpen()) throw std::runtime_error("file can not be opened");
+void UserFileHandler::saveUser(const User* user, FileHandler& fs) {
+	if(user == nullptr) throw std::invalid_argument("User can not be null pointer");
+	if(!fs.isOpen()) throw std::runtime_error("file can not be opened");
 	UserType type = user->getRole();
 
-	file.write((const char*)& type, sizeof(UserType));
-	write(user->getFirstName());
-	write(user->getLastName());
-	write(user->getHashedPassword());
+	fs.file.write((const char*)& type, sizeof(UserType));
+	fs.write(user->getFirstName());
+	fs.write(user->getLastName());
+	fs.write(user->getHashedPassword());
 	unsigned id = user->getId();
-	file.write((const char*)& id, sizeof(unsigned));
-	file.flush();
+	fs.file.write((const char*)& id, sizeof(unsigned));
+	fs.file.flush();
 }
 
 User* UserFileHandler::readUser() {
@@ -45,7 +52,7 @@ User* UserFileHandler::getUserMatcher(unsigned id, const String& hashedPassword,
 		pos = findUserWithPassword(id, hashedPassword);
 	}
 	if(pos == -1)  {
-		throw std::runtime_error("User with that id was not found");
+		throw std::runtime_error("User was not found.");
 	}
 
 	int current = file.tellg();
@@ -108,8 +115,16 @@ int UserFileHandler::findUserMatcher(unsigned id, const String& hashedPassword, 
 }
 
 void UserFileHandler::deleteUser(unsigned id) {
-	std::fstream output(Config::fileNames(6).c_str(), std::ios::binary | std::ios::out);
-	if(!output.is_open()) throw std::runtime_error("Failed to open temporary file for writing");
+	updateUserMatcher(id, nullptr);
+}
+
+void UserFileHandler::updateUser(unsigned id, const User* updatedUser) {
+	updateUserMatcher(id, updatedUser);
+}
+
+void UserFileHandler::updateUserMatcher(unsigned id, const User* updatedUser) {
+	FileHandler output(Config::fileNames(6).c_str());
+	if(!output.isOpen()) throw std::runtime_error("Failed to open temporary file for writing");
 
 	int index = setAtBeginning();
 	int bytes = 0;
@@ -117,8 +132,12 @@ void UserFileHandler::deleteUser(unsigned id) {
 
 	while(file) {
 		if(tempUser->getId() != id) {
-			copyBytes(output, bytes);
-		};
+			copyBytes(output.file, bytes);
+		} else {
+			if(updatedUser != nullptr) {
+				saveUser(updatedUser, output);
+			}
+		}
 		delete tempUser;
 		tempUser = readUser(bytes);
 	}
@@ -128,5 +147,46 @@ void UserFileHandler::deleteUser(unsigned id) {
 	if(index < getFileSize()) {
 		file.seekg(index);
 	}
+	delete tempUser;
+}
+
+void UserFileHandler::messageCourse(const String& text, unsigned courseId) {
+	messageGroup(text, Group::Course, courseId);
+}
+
+void UserFileHandler::messageAll(const String& text) {
+	messageGroup(text, Group::All, -1);
+}
+
+void UserFileHandler::messageGroup(const String& text, Group groupType, unsigned id) {
+	if(!isOpen()) throw std::runtime_error("file cannot be opened");
+	if(getFileSize() == 0) return;
+
+	int index = setAtBeginning();
+	User* tempUser = readUser();
+	System& system = System::getInstance();
+	
+	while(!file.eof()) {
+		if(tempUser->getId() != system.getUserId()) {
+			if(groupType == Group::All) {
+				system.messageUser(tempUser->getId(), text);
+			} else if (groupType == Group::Course) {
+				Course* course = system.courseFileHandler.getCourse(id);
+				if(course->getOwnerId() != system.getUserId()) {
+					throw std::runtime_error("You are not the owner of this course");
+				}
+				if(system.courseFileHandler.findStudentId(id, tempUser->getId(), course->getStudentsCount())) {
+					system.messageUser(tempUser->getId(), text);
+				}
+				delete course;
+			}
+		}
+
+		delete tempUser;
+		tempUser = readUser();
+	}
+
+	file.clear();
+	file.seekg(index);
 	delete tempUser;
 }

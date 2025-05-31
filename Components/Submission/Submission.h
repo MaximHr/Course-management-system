@@ -1,3 +1,8 @@
+/*
+	Name: Maksim Hristov
+	FN: 4MI0600466
+*/
+
 #pragma once
 #include "../../Users/Student/Student.h"
 #include "../Assignment/Assignment.h"

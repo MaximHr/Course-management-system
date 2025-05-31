@@ -1,3 +1,8 @@
+/*
+	Name: Maksim Hristov
+	FN: 4MI0600466
+*/
+
 #include "Message.h"
 
 Message::Message(unsigned id, const String& text, unsigned recieverId, unsigned senderId) : 

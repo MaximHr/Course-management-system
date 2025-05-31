@@ -1,3 +1,8 @@
+/*
+	Name: Maksim Hristov
+	FN: 4MI0600466
+*/
+
 #include "User.h"
 
 //for simplcity i am not hashing the password, but just reversing it

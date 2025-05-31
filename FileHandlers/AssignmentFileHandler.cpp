@@ -1,3 +1,8 @@
+/*
+	Name: Maksim Hristov
+	FN: 4MI0600466
+*/
+
 #include "AssignmentFileHandler.h"
 #include "../Components/Assignment/Assignment.h"
 

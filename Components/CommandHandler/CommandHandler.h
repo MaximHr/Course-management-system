@@ -1,3 +1,8 @@
+/*
+	Name: Maksim Hristov
+	FN: 4MI0600466
+*/
+
 #pragma once
 #include "../../System/System.h"
 #include "../../Utils/String.h"
@@ -19,6 +24,7 @@ class CommandHandler {
 	void gradeHomework();
 	void messageUser();
 	void messageAll();
+	void changePassword();
 	void messageCourse();
 
 public:

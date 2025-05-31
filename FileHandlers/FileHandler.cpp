@@ -1,3 +1,8 @@
+/*
+	Name: Maksim Hristov
+	FN: 4MI0600466
+*/
+
 #include "../Utils/Config.h"
 #include "FileHandler.h"
 #include <iostream>
@@ -100,6 +105,5 @@ int FileHandler::setAtBeginning() {
 	int index = file.tellg();
 	file.clear();
 	file.seekg(0);
-	
 	return index;
 }

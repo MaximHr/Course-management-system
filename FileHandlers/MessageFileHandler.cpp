@@ -1,10 +1,15 @@
+/*
+	Name: Maksim Hristov
+	FN: 4MI0600466
+*/
+
 #include "MessageFileHandler.h"
 #include "../Components/Message/Message.h"
 
 MessageFileHandler::MessageFileHandler(const String& str) : FileHandler(str) { }
 
 void MessageFileHandler::saveMessage(const Message& message, FileHandler& fs) {
-	if(!isOpen()) throw std::runtime_error("file can not be opened");
+	if(!fs.isOpen()) throw std::runtime_error("file can not be opened");
 
 	unsigned id = message.getId();
 	unsigned recieverId = message.getRecieverId();

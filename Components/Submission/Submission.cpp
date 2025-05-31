@@ -1,3 +1,8 @@
+/*
+	Name: Maksim Hristov
+	FN: 4MI0600466
+*/
+
 #include "Submission.h"
 
 Submission::Submission() : grade(-1) {};

@@ -1,3 +1,8 @@
+/*
+	Name: Maksim Hristov
+	FN: 4MI0600466
+*/
+
 #pragma once
 #include "../Utils/Config.h"
 #include "../Utils/String.h"
@@ -18,7 +23,6 @@
 class System {
 	IdContainer idContainer;
 	UserFileHandler userFileHandler;
-	CourseFileHandler courseFileHandler;
 	AssignmentFileHandler assignmentFileHandler;
 	SubmissionFileHandler submissionFileHandler;
 	MessageFileHandler messageFileHandler;
@@ -30,6 +34,7 @@ class System {
 	System& operator=(const System& other) = delete;
 
 public:
+	CourseFileHandler courseFileHandler;
 	static System& getInstance();
 	~System();
 	unsigned addUser(UserType type, const String& firstName, const String& lastName, const String& password);
@@ -50,4 +55,6 @@ public:
 	void messageUser(unsigned recieverId, const String& text);
 	void viewMessages();
 	void deleteMessages();
+	void changePassword(const String& password);
+	unsigned getUserId() const;
 };

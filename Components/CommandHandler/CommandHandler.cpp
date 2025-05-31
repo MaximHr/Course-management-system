@@ -1,3 +1,8 @@
+/*
+	Name: Maksim Hristov
+	FN: 4MI0600466
+*/
+
 #include "CommandHandler.h"
 
 CommandHandler::CommandHandler() : system(System::getInstance()) {}
@@ -16,6 +21,15 @@ namespace {
 				return number;
 			}
 		}
+	}
+
+	template <>
+	String getValidInfo<String>() {
+		String str;
+		do {
+			std::cin >> str;
+		} while(str.getSize() == 0);
+		return str;
 	}
 }
 
@@ -66,6 +80,8 @@ void CommandHandler::callCommand(const String& str) {
 			system.viewMessages();
 		} else if(command == "clear_mailbox") {
 			system.deleteMessages();
+		} else if(command == "change_password") {
+			changePassword();
 		}
 	} catch(const std::exception& e) {
 		std::cout << e.what() << '\n';
@@ -78,9 +94,8 @@ void CommandHandler::login() {
 
 	std::cout << "Id: ";
 	id = getValidInfo<unsigned>();
-
 	std::cout << "Password: ";
-	std::cin >> pass;
+	pass = getValidInfo<String>();
 
 	system.login(id, pass);
 	std::cout << "Login succefull!" << std::endl;
@@ -104,11 +119,11 @@ void CommandHandler::addUser() {
 	} while(!isValidType);
 	
 	std::cout << "first name: ";
-	std::cin >> firstName;
+	firstName = getValidInfo<String>();
 	std::cout << "last name: ";
-	std::cin >> lastName;
+	lastName = getValidInfo<String>();
 	std::cout << "password: ";
-	std::cin >> password;
+	password = getValidInfo<String>();
 
 	unsigned id = system.addUser(type, firstName, lastName, password);
 	std::cout << "Added " << strType << ' ' << firstName << ' ' << lastName << " with ID " << id << '\n'; 
@@ -136,6 +151,7 @@ void CommandHandler::help() {
 	std::cout << "message" << '\n';
 	std::cout << "message_all | Admin only" << '\n';
 	std::cout << "message_students | Teacher only" << '\n';
+	std::cout << "change_password | Teacher or Student" << '\n';
 	std::cout << "logout" << '\n';
 	std::cout << "exit" << '\n';
 }
@@ -143,9 +159,10 @@ void CommandHandler::help() {
 void CommandHandler::addCourse() {
 	String name, password;
 	std::cout << "name: ";
-	std::cin >> name;
+	name = getValidInfo<String>();
 	std::cout << "password: ";
-	std::cin >> password;
+	password = getValidInfo<String>();
+
 	unsigned id = system.addCourse(name, password);
 	std::cout << "Course " << name << " with id of " << id << " added successfully" << '\n';
 }
@@ -166,7 +183,7 @@ void CommandHandler::enrollWithPassword() {
 	std::cout << "Course id: ";
 	courseId = getValidInfo<unsigned>();
 	std::cout << "Course password: ";
-	std::cin >> coursePassword;
+	coursePassword = getValidInfo<String>();
 
 	system.enrollStudent(courseId, coursePassword);
 	std::cout << "You have succefully enrolled in this course!" << '\n';
@@ -191,7 +208,7 @@ void CommandHandler::assignHomework() {
 	std::cout << "Course id: ";
 	courseId = getValidInfo<unsigned>();
 	std::cout << "Homework name: ";
-	std::cin >> name;
+	name = getValidInfo<String>();
 
 	unsigned id = system.addAssignment(courseId, name);
 	std::cout << "Assignment with id of " << id << " added." << '\n';
@@ -204,7 +221,7 @@ void CommandHandler::submitHomework() {
 	std::cout << "Assignment id: ";
 	assignmentId = getValidInfo<unsigned>();
 	std::cout << "Homework: ";
-	std::cin >> homework;
+	homework = getValidInfo<String>();
 	unsigned id = system.addHomework(assignmentId, homework);
 	std::cout << "Homework with id of " << id << " added." << '\n';
 }
@@ -233,10 +250,12 @@ void CommandHandler::gradeHomework() {
 void CommandHandler::messageUser() {
 	unsigned recieverId;
 	String text;
+
 	std::cout << "Reciever id: ";
 	recieverId = getValidInfo<unsigned>();
 	std::cout << "Message: ";
-	std::cin >> text;
+	text = getValidInfo<String>();
+
 	system.messageUser(recieverId, text);
 	std::cout << "Message sent succefully" << '\n';
 }
@@ -244,7 +263,8 @@ void CommandHandler::messageUser() {
 void CommandHandler::messageAll() {
 	String text;
 	std::cout << "Message: ";
-	std::cin >> text;
+	text = getValidInfo<String>();
+
 	system.messageAll(text);
 	std::cout << "Message sent succefully" << '\n';
 }
@@ -255,7 +275,16 @@ void CommandHandler::messageCourse() {
 	std::cout << "Course id: ";
 	courseId = getValidInfo<unsigned>();
 	std::cout << "Message: ";
-	std::cin >> text;
+	text = getValidInfo<String>();
+
 	system.messageCourse(courseId, text);
 	std::cout << "Message sent succefully" << '\n';
+}
+
+void CommandHandler::changePassword() {
+	String pass;
+	std::cout << "New password: ";
+	pass = getValidInfo<String>();
+	system.changePassword(pass);
+	std::cout << "Password changed succefully" << '\n';
 }

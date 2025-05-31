@@ -1,3 +1,8 @@
+/*
+	Name: Maksim Hristov
+	FN: 4MI0600466
+*/
+
 #include "SystemVerifier.h"
 
 SystemVerifier::SystemVerifier(User*& user) : currentUser(user) { }
@@ -37,7 +42,7 @@ void SystemVerifier::requireStudent() const {
 
 void SystemVerifier::requireClient() const {
 	requireLogged();
-	if(currentUser->getRole() != UserType::Student || currentUser->getRole() != UserType::Teacher) {
+	if(currentUser->getRole() != UserType::Student && currentUser->getRole() != UserType::Teacher) {
 		throw std::runtime_error("Access denied: requires Student or Teacher role.");
 	}
 }

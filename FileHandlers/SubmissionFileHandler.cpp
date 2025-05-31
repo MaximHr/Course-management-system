@@ -1,3 +1,8 @@
+/*
+	Name: Maksim Hristov
+	FN: 4MI0600466
+*/
+
 #include "SubmissionFileHandler.h"
 #include "../Components/Submission/Submission.h"
 
@@ -39,7 +44,7 @@ Submission* SubmissionFileHandler::getSubmission(unsigned id) {
 }
 
 void SubmissionFileHandler::saveSubmission(const Submission& submission, FileHandler& fs) {
-	if(!isOpen()) throw std::runtime_error("file can not be opened");
+	if(!fs.isOpen()) throw std::runtime_error("file can not be opened");
 
 	unsigned id = submission.getId();
 	unsigned studentId = submission.getStudentId();

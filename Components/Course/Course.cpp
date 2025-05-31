@@ -1,3 +1,8 @@
+/*
+	Name: Maksim Hristov
+	FN: 4MI0600466
+*/
+
 #include "Course.h"
 
 Course::Course(const String& name, const String& password, unsigned ownerId, unsigned id) :

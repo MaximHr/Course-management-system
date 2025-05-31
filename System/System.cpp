@@ -1,3 +1,8 @@
+/*
+	Name: Maksim Hristov
+	FN: 4MI0600466
+*/
+
 #include "../Utils/Config.h"
 #include "System.h"
 
@@ -26,7 +31,7 @@ unsigned System::addUser(UserType type, const String& firstName, const String& l
 	}
 
 	User* newUser = UserFactory::createUser(type, firstName, lastName, password, id);
-	userFileHandler.saveUser(newUser);
+	userFileHandler.saveUser(newUser, userFileHandler);
 	idContainer.increment(Config::fileNames(0));
 	delete newUser;
 
@@ -219,10 +224,12 @@ void System::gradeSubmission(unsigned submissionId, double newGrade) {
 
 void System::messageAll(const String& text) {
 	verifier.requireAdmin();
+	userFileHandler.messageAll(text);
 }
 
 void System::messageCourse(unsigned courseId, const String& text) {
 	verifier.requireTeacher();
+	userFileHandler.messageCourse(text, courseId);
 }
 
 void System::messageUser(unsigned recieverId, const String& text) {
@@ -244,6 +251,13 @@ void System::messageUser(unsigned recieverId, const String& text) {
 	messageFileHandler.saveMessage(message, messageFileHandler);
 	messageFileHandler.file.flush();
 	idContainer.increment(Config::fileNames(5));
+}
+
+void System::changePassword(const String& password) {
+	verifier.requireClient();
+	const User* updatedUser = UserFactory::createUser(user->getRole(), user->getFirstName(), user->getLastName(), password, user->getId());
+	userFileHandler.updateUser(user->getId(), updatedUser);
+	delete updatedUser;
 }
 
 
@@ -270,4 +284,8 @@ void System::logout() {
 System::~System() {
 	delete user;
 	user = nullptr;
+}
+
+unsigned System::getUserId() const {
+	return user->getId();
 }
